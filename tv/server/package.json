@@ -1,0 +1,25 @@
+{
+  "name": "inkwash-guide",
+  "private": true,
+  "version": "0.1.0",
+  "description": "The guide service for Inkwash on Fire TV: Claude on Amazon Bedrock looks at the painting, Amazon Polly speaks, Amazon Nova Canvas makes it real.",
+  "type": "module",
+  "main": "lambda.mjs",
+  "scripts": {
+    "test": "node --test test/*.test.mjs",
+    "dev": "node dev.mjs",
+    "stand-in": "node dev.mjs --stand-in",
+    "cli": "node dev.mjs --cli"
+  },
+  "dependencies": {
+    "@anthropic-ai/bedrock-sdk": "^0.34.2",
+    "@aws-sdk/client-bedrock-runtime": "^3.1147.0",
+    "@aws-sdk/client-dynamodb": "^3.1146.0",
+    "@aws-sdk/client-polly": "^3.1146.0",
+    "@aws-sdk/client-s3": "^3.1151.0",
+    "@aws-sdk/s3-request-presigner": "^3.1151.0"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

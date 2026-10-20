@@ -1,0 +1,6 @@
+/* Alegreya and Alegreya Sans, Latin subset, bundled so the TV app needs no font service.
+   SIL Open Font License 1.1: see OFL-alegreya.txt and OFL-alegreyasans.txt. */
+@font-face { font-family: 'Alegreya'; font-style: normal; font-weight: 400 800; font-display: swap; src: url(./alegreya-latin.woff2) format('woff2'); }
+@font-face { font-family: 'Alegreya'; font-style: italic; font-weight: 400; font-display: swap; src: url(./alegreya-italic-latin.woff2) format('woff2'); }
+@font-face { font-family: 'Alegreya Sans'; font-style: normal; font-weight: 500; font-display: swap; src: url(./alegreya-sans-500-latin.woff2) format('woff2'); }
+@font-face { font-family: 'Alegreya Sans'; font-style: normal; font-weight: 700; font-display: swap; src: url(./alegreya-sans-700-latin.woff2) format('woff2'); }

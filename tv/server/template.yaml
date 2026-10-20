@@ -1,0 +1,412 @@
+# The guide service on AWS, for the AWS SAM CLI: one Lambda function with a function URL.
+#
+#   cd inkwash/tv/server && npm install --omit=dev
+#   sam deploy --guided --stack-name inkwash-guide --capabilities CAPABILITY_IAM
+#
+# The function URL it prints is what the TV app is built with (INKWASH_GUIDE_URL), with the
+# GuideKey given here as INKWASH_GUIDE_KEY. Then confirm the email AWS sends AlertEmail: until you
+# do, no alert reaches you. What it costs and how it stops: the guide counts what it spends and
+# stops for the day at SpendPerDay (limits.mjs); an AWS Budget emails you as the month's bill
+# grows, and at MonthlyBudget takes the guide's access to Bedrock and Polly away. The TV goes on
+# telling offline either way.
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Inkwash guide service. Claude on Amazon Bedrock looks at a painting, asks and tells the dream, Amazon Polly speaks, Amazon Nova Canvas makes a told painting real and Amazon Nova Reel sets it moving, and a DynamoDB table counts the images everyone's tellings use, the pictures and clips made each day, and holds a phone's words until the TV has them.
+
+Parameters:
+  GuideKey:
+    Type: String
+    NoEcho: true
+    MinLength: 16
+    Description: The key the TV sends in an x-inkwash-key header (build the app with INKWASH_GUIDE_KEY). At least 16 characters; make it long and random. It ships inside the app, so it keeps out casual callers only; the spending limits below are what protect the bill.
+  SpendPerDay:
+    Type: Number
+    Default: 10
+    MinValue: 0
+    Description: The most the guide may spend in a day on Bedrock and Polly, in US dollars, counted as it goes at list prices plus 10%. Then it stops until midnight UTC and the TV tells offline.
+  MonthlyBudget:
+    Type: Number
+    Default: 50
+    MinValue: 1
+    Description: An AWS Budget for the whole account, in US dollars a month, after any credits. You are emailed at half of it, at 80% and when the month is forecast to go over; at all of it, the guide loses its access to Bedrock and Polly until you reverse the budget's action.
+  AlertEmail:
+    Type: String
+    AllowedPattern: '^[^@\s]+@[^@\s]+\.[^@\s]+$'
+    ConstraintDescription: an email address
+    Description: Where alerts go (the budget, errors, the day's spending reached). AWS emails it once to confirm.
+  Contact:
+    Type: String
+    Default: ''
+    Description: Where people can write to you, shown on the privacy page (<guide>/privacy). Public.
+  AIOptOut:
+    Type: String
+    Default: 'no'
+    AllowedValues: ['yes', 'no']
+    Description: Say yes once this account has an AWS Organizations AI services opt-out policy that covers Amazon Polly; the privacy page then says so.
+  TellModel:
+    Type: String
+    Default: anthropic.claude-opus-5-5
+    Description: The guide's model, which looks, asks, tells and remembers.
+  Effort:
+    Type: String
+    Default: medium
+    AllowedValues: [low, medium, high]
+    Description: How hard the guide thinks. Lower is quicker and cheaper.
+  RemarkModel:
+    Type: String
+    Default: anthropic.claude-haiku-4-5
+  RealPictures:
+    Type: String
+    Default: 'on'
+    AllowedValues: ['on', 'off']
+    Description: Dream it real. Each told painting is made into a picture by Amazon Nova Canvas, a few cents a picture. Off keeps the ink.
+  RealPicturesPerDay:
+    Type: Number
+    Default: 60
+    MinValue: 0
+    Description: The most pictures made in a day, by every TV this guide serves together (paintings made real, each world's place, and each thing come to life). A few cents each, counted in SpendPerDay too.
+  ThingCutout:
+    Type: String
+    Default: 'nova'
+    AllowedValues: ['nova', 'tv']
+    Description: How each thing made real is cut out of its white background. nova asks Amazon Nova Canvas to remove it (one more picture a thing, counted in RealPicturesPerDay); tv has the TV cut the white away itself, for nothing.
+  RealModel:
+    Type: String
+    Default: amazon.nova-canvas-v1:0
+    Description: The image model that makes paintings real. Enable it in Amazon Bedrock first.
+  RealRegion:
+    Type: String
+    Default: ''
+    Description: Where to call the image model, if not in this stack's region (it is not offered in every region).
+  AliveClips:
+    Type: String
+    Default: 'on'
+    AllowedValues: ['on', 'off']
+    Description: It comes alive. A picture made real can be set moving, six seconds of it, by Amazon Nova Reel, about 50 cents a clip, only when someone chooses to watch it. Nova Reel is in us-east-1, so clips are made only by a stack deployed there; off, or in any other region, the picture stays still.
+  AliveClipsPerDay:
+    Type: Number
+    Default: 6
+    MinValue: 0
+    Description: The most clips made in a day, by every TV this guide serves together. Counted in SpendPerDay too.
+  WorldLabsKey:
+    Type: String
+    NoEcho: true
+    Default: ''
+    Description: Walk inside. A World Labs API key (platform.worldlabs.ai), so a picture made real can be built into a 3D world to walk through, about 20 cents a world, only when someone chooses to walk inside. Empty, there are no worlds; the rest works as before.
+  WorldsPerDay:
+    Type: Number
+    Default: 10
+    MinValue: 0
+    Description: The most worlds built in a day, by every TV this guide serves together. Counted in SpendPerDay too.
+  WorldsAhead:
+    Type: String
+    Default: 'off'
+    AllowedValues: ['off', 'on']
+    Description: Walk inside, sooner. On, a TV starts building the world as soon as Walk inside is offered, before it is chosen, so it is nearer ready; a world never walked into is paid for all the same. Off, it is built only when chosen.
+  AliveModel:
+    Type: String
+    Default: amazon.nova-reel-v1:0
+    Description: The video model that sets a picture moving. Enable it in Amazon Bedrock first.
+  Voice:
+    Type: String
+    Default: Ruth
+  CommonsSalt:
+    Type: String
+    NoEcho: true
+    Default: ''
+    Description: The salt the commons hashes images with. Set a long random value and keep it.
+
+Conditions:
+  # clips are made where Nova Reel is, with the bucket beside it
+  ClipsOn: !And [!Equals [!Ref AliveClips, 'on'], !Equals [!Ref 'AWS::Region', us-east-1]]
+
+Resources:
+  Guide:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: .
+      Handler: lambda.handler
+      Role: !GetAtt GuideRole.Arn
+      Runtime: nodejs22.x
+      Architectures: [arm64]
+      MemorySize: 512
+      # one turn of the guide's agent: Opus thinking at medium effort can take a minute or more
+      Timeout: 120
+      Environment:
+        Variables:
+          GUIDE_KEY: !Ref GuideKey
+          GUIDE_TELL_MODEL: !Ref TellModel
+          GUIDE_EFFORT: !Ref Effort
+          GUIDE_REMARK_MODEL: !Ref RemarkModel
+          GUIDE_VOICE: !Ref Voice
+          GUIDE_ENGINE: neural
+          GUIDE_COMMONS_TABLE: !Ref Commons
+          GUIDE_COMMONS_SALT: !Ref CommonsSalt
+          GUIDE_REAL: !Ref RealPictures
+          GUIDE_REAL_PER_DAY: !Ref RealPicturesPerDay
+          GUIDE_REAL_MODEL: !Ref RealModel
+          GUIDE_REAL_REGION: !Ref RealRegion
+          GUIDE_CUTOUT: !Ref ThingCutout
+          GUIDE_SPEND_PER_DAY: !Ref SpendPerDay
+          GUIDE_ALIVE_BUCKET: !If [ClipsOn, !Ref Clips, '']
+          GUIDE_ALIVE_REGION: !Ref 'AWS::Region'
+          GUIDE_ALIVE_MODEL: !Ref AliveModel
+          GUIDE_ALIVE_PER_DAY: !Ref AliveClipsPerDay
+          GUIDE_WORLDLABS_KEY: !Ref WorldLabsKey
+          GUIDE_WORLDS_PER_DAY: !Ref WorldsPerDay
+          GUIDE_WORLDS_AHEAD: !Ref WorldsAhead
+          GUIDE_CONTACT: !Ref Contact
+          GUIDE_AI_OPT_OUT: !Ref AIOptOut
+      FunctionUrlConfig:
+        AuthType: NONE
+        Cors:
+          AllowOrigins: ['*']
+          AllowMethods: [GET, POST]
+          AllowHeaders: [content-type, x-inkwash-key]
+          MaxAge: 600
+
+  # What the guide may do. Its own role, so the budget's action can take Bedrock and Polly away.
+  GuideRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal: { Service: lambda.amazonaws.com }
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - !Sub 'arn:${AWS::Partition}:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole'
+      Policies:
+        - PolicyName: guide
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action: bedrock-mantle:CreateInference
+                Resource: '*'
+              - Effect: Allow
+                Action: polly:SynthesizeSpeech
+                Resource: '*'
+              - Effect: Allow
+                Action: bedrock:InvokeModel
+                Resource: !Sub 'arn:${AWS::Partition}:bedrock:*::foundation-model/${RealModel}'
+              - Effect: Allow
+                Action: [dynamodb:Query, dynamodb:UpdateItem, dynamodb:GetItem, dynamodb:PutItem, dynamodb:DeleteItem]
+                Resource: !GetAtt Commons.Arn
+              # it comes alive: Nova Reel, asked and looked in on, writing each clip to the clips
+              # bucket as the guide (so the guide may write there), which the guide then lists and
+              # links the TV to
+              - Effect: Allow
+                Action: bedrock:InvokeModel
+                Resource: !Sub 'arn:${AWS::Partition}:bedrock:*::foundation-model/${AliveModel}'
+              - Effect: Allow
+                Action: [bedrock:StartAsyncInvoke, bedrock:GetAsyncInvoke]
+                Resource: '*'
+              - Effect: Allow
+                Action: [s3:PutObject, s3:GetObject]
+                Resource: !Sub 'arn:${AWS::Partition}:s3:::${Clips}/*'
+              - Effect: Allow
+                Action: s3:ListBucket
+                Resource: !Sub 'arn:${AWS::Partition}:s3:::${Clips}'
+
+  # The guide's log: what went wrong, kept 14 days (the privacy page says so)
+  GuideLogs:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub '/aws/lambda/${Guide}'
+      RetentionInDays: 14
+
+  # Alerts, by email to AlertEmail (confirm the email AWS sends first)
+  Alerts:
+    Type: AWS::SNS::Topic
+    Properties:
+      Subscription:
+        - Protocol: email
+          Endpoint: !Ref AlertEmail
+
+  # The guide's own errors (it answers 502 and logs "guide error"), five in five minutes
+  ErrorsLogged:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      LogGroupName: !Ref GuideLogs
+      FilterPattern: '"guide error"'
+      MetricTransformations:
+        - MetricNamespace: !Sub 'Inkwash/${AWS::StackName}'
+          MetricName: GuideErrors
+          MetricValue: '1'
+  ErrorsAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmDescription: The Inkwash guide answered with errors five times in five minutes. Its log says why.
+      Namespace: !Sub 'Inkwash/${AWS::StackName}'
+      MetricName: GuideErrors
+      Statistic: Sum
+      Period: 300
+      EvaluationPeriods: 1
+      Threshold: 5
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      TreatMissingData: notBreaching
+      AlarmActions: [!Ref Alerts]
+
+  # The day's spending reached: the TV is telling offline until midnight UTC
+  SpentLogged:
+    Type: AWS::Logs::MetricFilter
+    Properties:
+      LogGroupName: !Ref GuideLogs
+      FilterPattern: '"told enough for today"'
+      MetricTransformations:
+        - MetricNamespace: !Sub 'Inkwash/${AWS::StackName}'
+          MetricName: SpentForToday
+          MetricValue: '1'
+  SpentAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmDescription: The Inkwash guide reached SpendPerDay and stopped for today; the TV is telling offline until midnight UTC.
+      Namespace: !Sub 'Inkwash/${AWS::StackName}'
+      MetricName: SpentForToday
+      Statistic: Sum
+      Period: 300
+      EvaluationPeriods: 1
+      Threshold: 1
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      TreatMissingData: notBreaching
+      AlarmActions: [!Ref Alerts]
+
+  # The function itself failing, or turned away for want of room to run
+  CrashAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmDescription: The Inkwash guide's function failed or was throttled.
+      Metrics:
+        - Id: failed
+          Expression: errors + throttles
+          ReturnData: true
+        - Id: errors
+          ReturnData: false
+          MetricStat:
+            Metric: { Namespace: AWS/Lambda, MetricName: Errors, Dimensions: [{ Name: FunctionName, Value: !Ref Guide }] }
+            Period: 300
+            Stat: Sum
+        - Id: throttles
+          ReturnData: false
+          MetricStat:
+            Metric: { Namespace: AWS/Lambda, MetricName: Throttles, Dimensions: [{ Name: FunctionName, Value: !Ref Guide }] }
+            Period: 300
+            Stat: Sum
+      EvaluationPeriods: 1
+      Threshold: 1
+      ComparisonOperator: GreaterThanOrEqualToThreshold
+      TreatMissingData: notBreaching
+      AlarmActions: [!Ref Alerts]
+
+  # The month's bill, for the whole account, after credits: emails as it grows, and at all of it
+  # the guide's access to Bedrock and Polly taken away (StopPolicy attached to its role) until you
+  # reverse the action in the Budgets console. Billing data is a few hours behind, which is why the
+  # guide also counts for itself (SpendPerDay).
+  Budget:
+    Type: AWS::Budgets::Budget
+    Properties:
+      Budget:
+        BudgetName: !Sub '${AWS::StackName}-month'
+        BudgetType: COST
+        TimeUnit: MONTHLY
+        BudgetLimit: { Amount: !Ref MonthlyBudget, Unit: USD }
+      NotificationsWithSubscribers:
+        - Notification: { NotificationType: ACTUAL, ComparisonOperator: GREATER_THAN, Threshold: 50, ThresholdType: PERCENTAGE }
+          Subscribers: [{ SubscriptionType: EMAIL, Address: !Ref AlertEmail }]
+        - Notification: { NotificationType: ACTUAL, ComparisonOperator: GREATER_THAN, Threshold: 80, ThresholdType: PERCENTAGE }
+          Subscribers: [{ SubscriptionType: EMAIL, Address: !Ref AlertEmail }]
+        - Notification: { NotificationType: FORECASTED, ComparisonOperator: GREATER_THAN, Threshold: 100, ThresholdType: PERCENTAGE }
+          Subscribers: [{ SubscriptionType: EMAIL, Address: !Ref AlertEmail }]
+  StopPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      Description: Attached to the Inkwash guide's role by the budget's action, to stop what costs money.
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Deny
+            Action: [bedrock-mantle:CreateInference, bedrock:InvokeModel, bedrock:StartAsyncInvoke, polly:SynthesizeSpeech]
+            Resource: '*'
+  BudgetsRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal: { Service: budgets.amazonaws.com }
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: stop-the-guide
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action: [iam:AttachRolePolicy, iam:DetachRolePolicy]
+                Resource: !GetAtt GuideRole.Arn
+  BudgetStop:
+    Type: AWS::Budgets::BudgetsAction
+    DependsOn: Budget
+    Properties:
+      BudgetName: !Sub '${AWS::StackName}-month'
+      NotificationType: ACTUAL
+      ActionType: APPLY_IAM_POLICY
+      ActionThreshold: { Type: PERCENTAGE, Value: 100 }
+      ApprovalModel: AUTOMATIC
+      ExecutionRoleArn: !GetAtt BudgetsRole.Arn
+      Definition:
+        IamActionDefinition:
+          PolicyArn: !Ref StopPolicy
+          Roles: [!Ref GuideRole]
+      Subscribers:
+        - Type: EMAIL
+          Address: !Ref AlertEmail
+
+  # It comes alive: where Nova Reel writes each clip, private, each let go a day after it is made.
+  # The TV fetches its own clip by a link good for ten minutes (CORS lets it), and keeps it.
+  Clips:
+    Type: AWS::S3::Bucket
+    Properties:
+      PublicAccessBlockConfiguration: { BlockPublicAcls: true, BlockPublicPolicy: true, IgnorePublicAcls: true, RestrictPublicBuckets: true }
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault: { SSEAlgorithm: AES256 }
+      LifecycleConfiguration:
+        Rules:
+          - { Id: let-go-after-a-day, Status: Enabled, ExpirationInDays: 1 }
+      CorsConfiguration:
+        CorsRules:
+          - { AllowedMethods: [GET], AllowedOrigins: ['*'], MaxAge: 600 }
+
+  # The commons: how many tellings used each image (by salted hash, and its words once ten tellings
+  # have used it), so a new telling can be steered away from what everyone gets. No person. How
+  # many pictures were made each day (pk real#DAY), so no more are made than RealPicturesPerDay, and
+  # how many clips (pk alive#DAY), so no more than AliveClipsPerDay, how many worlds (pk
+  # world#DAY), so no more than WorldsPerDay, and
+  # what each day cost (pk spend#DAY), so no more is spent than SpendPerDay.
+  # And pairings with a phone (pk session#CODE): what they said, held only until their TV picks
+  # it up, then deleted; a pairing and anything left in it expire after 30 minutes (time to live
+  # on `expires`, a backstop: the guide never serves an expired pairing).
+  Commons:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      BillingMode: PAY_PER_REQUEST
+      TimeToLiveSpecification:
+        AttributeName: expires
+        Enabled: true
+      AttributeDefinitions:
+        - { AttributeName: pk, AttributeType: S }
+        - { AttributeName: sk, AttributeType: S }
+      KeySchema:
+        - { AttributeName: pk, KeyType: HASH }
+        - { AttributeName: sk, KeyType: RANGE }
+
+Outputs:
+  GuideUrl:
+    Description: Build the TV app with INKWASH_GUIDE_URL set to this
+    Value: !GetAtt GuideUrl.FunctionUrl
+  PrivacyUrl:
+    Description: The privacy notice and terms, for the app's listing
+    Value: !Join ['', [!GetAtt GuideUrl.FunctionUrl, 'privacy']]

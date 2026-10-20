@@ -1,0 +1,21 @@
+{
+  "name": "inkwash-tv",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Inkwash on Fire TV: paint a dream with your remote, and a guide talks you through it and tells it back.",
+  "type": "module",
+  "scripts": {
+    "start": "node scripts/serve.mjs",
+    "test": "node --test test/logic.test.mjs",
+    "e2e": "node test/tv.e2e.mjs",
+    "bundle": "node scripts/bundle.mjs",
+    "e2e:bundle": "node scripts/bundle.mjs && TV_URL=file://$PWD/dist/inkwash-tv.html node test/tv.e2e.mjs",
+    "vega:assets": "node scripts/bundle.mjs && cp dist/inkwash-tv.html vega/assets/index.html",
+    "demo": "node scripts/demo.mjs"
+  },
+  "devDependencies": {
+    "@sparkjsdev/spark": "2.3.1",
+    "esbuild": "^0.25.12",
+    "three": "0.180.0"
+  }
+}

@@ -1,0 +1,21 @@
+{
+ "currency": "USD",
+ "unit": "per million tokens",
+ "checked": "2026-10-05",
+ "note": "List prices, from each provider's own page or a named tracker (checked 2026-10-04 and 2026-10-05). Trackers are marked; check the provider's own page before relying on a price. Claude cache prices are the documented multipliers of the input price: reads 0.1x, writes 1.25x (5-minute cache). A price of null means unknown: the gateway will not run a capped route without one.",
+ "models": [
+  { "provider": "anthropic", "model": "claude-opus-5-5", "input": 4, "output": 20, "cacheRead": 0.4, "cacheWrite": 5, "effective": "2026-10-04", "source": "https://platform.claude.com/docs/en/about-claude/pricing" },
+  { "provider": "anthropic", "model": "claude-sonnet-5-5", "input": 2, "output": 10, "cacheRead": 0.2, "cacheWrite": 2.5, "effective": "2026-10-04", "source": "https://platform.claude.com/docs/en/about-claude/pricing" },
+  { "provider": "anthropic", "model": "claude-haiku-4-5", "input": 1, "output": 5, "cacheRead": 0.1, "cacheWrite": 1.25, "effective": "2026-10-04", "source": "https://platform.claude.com/docs/en/about-claude/pricing" },
+  { "provider": "bedrock", "model": "anthropic.claude-opus-5-5", "input": null, "output": null, "cacheRead": null, "cacheWrite": null, "effective": null, "source": "Amazon Bedrock pricing for your region: set these before running a capped route" },
+  { "provider": "bedrock", "model": "anthropic.claude-sonnet-5-5", "input": null, "output": null, "cacheRead": null, "cacheWrite": null, "effective": null, "source": "Amazon Bedrock pricing for your region: set these before running a capped route" },
+  { "provider": "bedrock", "model": "anthropic.claude-haiku-4-5", "input": null, "output": null, "cacheRead": null, "cacheWrite": null, "effective": null, "source": "Amazon Bedrock pricing for your region: set these before running a capped route" },
+  { "provider": "deepseek", "model": "deepseek-v4-flash", "input": 0.22, "output": 0.66, "cacheRead": null, "cacheWrite": 0, "effective": "2026-08-16", "window": "off-peak", "source": "https://api-docs.deepseek.com/updates/" },
+  { "provider": "deepseek", "model": "deepseek-v4-flash", "input": 0.44, "output": 1.32, "cacheRead": null, "cacheWrite": 0, "effective": "2026-08-16", "window": "peak", "source": "https://api-docs.deepseek.com/updates/" },
+  { "provider": "together", "model": "deepseek-v4-flash", "input": 0.14, "output": 0.28, "cacheRead": null, "cacheWrite": 0, "effective": "2026-10-04", "source": "https://computeprices.com/providers/together-ai/models/deepseek-v4-flash", "tracker": true },
+  { "provider": "gemini", "model": "gemini-2.5-flash-lite", "input": 0.1, "output": 0.4, "cacheRead": null, "cacheWrite": 0, "effective": "2026-10-04", "source": "https://www.morphllm.com/gemini-api-pricing", "tracker": true },
+  { "provider": "gemini", "model": "gemini-3.8-flash", "input": 0.75, "output": 3.75, "cacheRead": null, "cacheWrite": 0, "effective": "2026-10-04", "until": "2026-12-31", "source": "https://www.mindstudio.ai/blog/gemini-3-8-flash-pricing", "tracker": true },
+  { "provider": "openai", "model": "gpt-5.4-nano", "input": 0.2, "output": 1.25, "cacheRead": null, "cacheWrite": 0, "effective": "2026-10-04", "source": "https://morphllm.com/openai-api-pricing", "tracker": true },
+  { "provider": "openai", "model": "gpt-5.4-mini", "input": 0.75, "output": 4.5, "cacheRead": null, "cacheWrite": 0, "effective": "2026-10-04", "source": "https://morphllm.com/openai-api-pricing", "tracker": true }
+ ]
+}

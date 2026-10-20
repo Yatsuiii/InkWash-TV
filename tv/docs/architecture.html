@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Inkwash architecture</title>
+<link rel="stylesheet" href="../fonts/fonts.css">
+<style>
+  :root { --paper: #f4eee0; --ink: #1c1e24; --soft: #565d6b; --felt: #23211f; --cinnabar: #b23a2a; --line: rgba(40, 32, 24, 0.28); }
+  html, body { margin: 0; background: var(--paper); }
+  #d { position: relative; width: 1600px; height: 900px; color: var(--ink); font-family: Alegreya, Georgia, serif; overflow: hidden; }
+  h1 { position: absolute; left: 44px; top: 26px; margin: 0; font: 600 38px Alegreya, Georgia, serif; }
+  h1 span { color: var(--cinnabar); }
+  .sub { position: absolute; left: 46px; top: 76px; margin: 0; font: italic 400 21px Alegreya, Georgia, serif; color: var(--soft); }
+  .zone { position: absolute; border: 2px dashed var(--line); border-radius: 22px; }
+  .zone > .label { position: absolute; left: 22px; top: -15px; padding: 0 10px; background: var(--paper); font: 700 15px "Alegreya Sans", Arial, sans-serif; letter-spacing: 0.18em; text-transform: uppercase; color: var(--soft); }
+  .box { position: absolute; box-sizing: border-box; padding: 14px 18px 14px; border: 2.5px solid var(--ink); border-radius: 14px; background: #fbf7ee; }
+  .box h2 { margin: 0 0 5px; font: 700 19px "Alegreya Sans", Arial, sans-serif; letter-spacing: 0.06em; }
+  .box p { margin: 0; font: 400 17.5px/1.32 Alegreya, Georgia, serif; }
+  .box.tv { border-width: 3px; background: #fffdf8; padding-top: 16px; }
+  .box.tv > h2 { font-size: 22px; }
+  .box.tv > p.note { font-style: italic; color: var(--soft); margin-bottom: 10px; }
+  .part { box-sizing: border-box; margin-top: 12px; padding: 11px 16px 12px; border-left: 5px solid var(--ink); background: rgba(40, 32, 24, 0.045); border-radius: 0 10px 10px 0; }
+  .part h3 { margin: 0 0 3px; font: 700 18px "Alegreya Sans", Arial, sans-serif; letter-spacing: 0.05em; }
+  .part p { margin: 0; font: 400 17.5px/1.34 Alegreya, Georgia, serif; }
+  .part.keep { border-left-color: var(--cinnabar); background: rgba(178, 58, 42, 0.07); }
+  .part.keep h3 { color: var(--cinnabar); }
+  .box.aws { border-color: #3a3f4a; }
+  .seal { position: absolute; width: 54px; height: 54px; border-radius: 8px; background: var(--cinnabar); color: #f6e9dc; display: grid; place-items: center; transform: rotate(-3deg); box-shadow: inset 0 0 0 3px rgba(246, 233, 220, 0.85); font: 700 13px "Alegreya Sans", Arial, sans-serif; letter-spacing: 0.08em; }
+  svg { position: absolute; inset: 0; pointer-events: none; }
+  .tag { font: italic 400 16.5px Alegreya, Georgia, serif; fill: var(--soft); }
+  .foot { position: absolute; left: 46px; bottom: 22px; margin: 0; font: 400 17px Alegreya, Georgia, serif; color: var(--soft); }
+  .foot b { color: var(--ink); font-weight: 600; }
+</style>
+</head>
+<body>
+<div id="d">
+  <h1>Inkwash on Fire TV: <span>how it fits together</span></h1>
+  <p class="sub">For anyone with a world in their head. Four agents think on Amazon Bedrock, each held to their world in code; the senses, memory and checks run on the TV; the server keeps no paintings or stories.</p>
+
+  <div class="zone" style="left:40px; top:126px; width:972px; height:712px"><span class="label">At home</span></div>
+  <div class="zone" style="left:1040px; top:126px; width:532px; height:712px"><span class="label">AWS, in your account</span></div>
+
+  <div class="box tv" style="left:66px; top:150px; width:610px; height:666px">
+    <h2>Fire TV · Vega OS</h2>
+    <p class="note">React Native for Vega, one WebView, the page packed into one file</p>
+    <div class="part"><h3>The brush</h3><p>The remote as an ink brush: 16 clumps of bristles, pressure, ink load, a stroke washed out with Back.</p></div>
+    <div class="part"><h3>The ink</h3><p>WebGL2 rice paper: bleeding, drying, flying white; four inks; fewer wet steps on a slow TV. Told, it wakes up in their world's place.</p></div>
+    <div class="part"><h3>Feel it again</h3><p>The painting comes back stroke by stroke in their world's place; the dial marks lighter or heavier, calmer or more stirred, and the sky feels it.</p></div>
+    <div class="part"><h3>The harness: the storyteller's hands, and its limits</h3><p>Its tools run here: look · strokes · recall · thing · night · ask · tell · remember. Every telling is held to their evidence; nothing scary reaches a child, in code; their taste picks between a line and its alternative.</p></div>
+    <div class="part keep"><h3>Kept on the TV, and opened first</h3><p>Each painter's world, by seal, in a place written from its story: every chapter, its painting and its clip; each thing, how it looks and felt, what is true of it; their book. Forget a thing, and what grew from it goes.</p></div>
+  </div>
+
+  <div class="box" style="left:720px; top:168px; width:268px; height:148px">
+    <h2>The remote</h2>
+    <p>Arrows steer · OK paints<br>▼ presses · ▲ eases<br>▶‖ tells · Back washes out</p>
+  </div>
+  <div class="box" style="left:720px; top:388px; width:268px; height:170px">
+    <h2>A phone</h2>
+    <p>Scan the QR on the TV. Say what you are drawing as you draw, and how your world looks; answer the storyteller's questions.</p>
+  </div>
+  <div class="box" style="left:720px; top:612px; width:268px; height:204px">
+    <h2>The family</h2>
+    <p>A seal each, and a world each. A thing can visit another's world. For a child: everything read aloud, pictures among the answers, a storyteller that keeps it kind.</p>
+  </div>
+  <div class="seal" style="left:932px; top:584px">MOON</div>
+
+  <div class="box aws" style="left:1076px; top:150px; width:434px; height:258px">
+    <h2>The story server · Lambda function URL</h2>
+    <p>Holds the AWS keys a TV app can't. /agent checks every turn the TV sends and hands Claude's turns back unchanged; /wonder, /real and /scene hold the Worldbuilder, the Illustrator and the Set Designer to their world; /backdrop and /thing paint the place and each thing; /alive sets a picture moving. Keeps no paintings or stories.</p>
+    <p style="margin-top:8px">Every picture and clip counted; never past the day's cap.</p>
+  </div>
+  <div class="box aws" style="left:1076px; top:422px; width:434px; height:226px">
+    <h2>Amazon Bedrock</h2>
+    <p><b>Claude Opus 5.5</b>: the storyteller, thinking, with tools.<br><b>Claude Haiku 4.5</b>: the Worldbuilder, the Illustrator, the Set Designer, quick remarks.<br><b>Amazon Nova Canvas</b>: paintings made real; each world's place; each thing on its own.<br><b>Amazon Nova Reel</b>: a picture set moving, when they ask.</p>
+  </div>
+  <div class="box aws" style="left:1076px; top:662px; width:434px; height:72px">
+    <h2>Amazon Polly</h2>
+    <p>A neural voice, softer where it felt heavier.</p>
+  </div>
+  <div class="box aws" style="left:1076px; top:748px; width:434px; height:72px">
+    <h2>DynamoDB · S3</h2>
+    <p>The day's counts; pairings; each clip kept a day.</p>
+  </div>
+
+  <svg viewBox="0 0 1600 900" width="1600" height="900">
+    <defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="9" markerHeight="9" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#1c1e24"/></marker></defs>
+    <g fill="none" stroke="#1c1e24" stroke-width="2.4">
+      <!-- remote to TV -->
+      <path d="M720 242 L681 242" marker-end="url(#a)"/>
+      <!-- TV to and from the service, through the gap between the remote and the phone -->
+      <path d="M681 352 L1071 352" marker-end="url(#a)" marker-start="url(#a)"/>
+      <!-- phone to and from the service -->
+      <path d="M988 472 C 1030 472, 1036 400, 1071 400" marker-end="url(#a)" marker-start="url(#a)"/>
+      <!-- the service to Bedrock, Polly and DynamoDB -->
+      <path d="M1510 279 H1544 V784"/>
+      <path d="M1544 535 H1515" marker-end="url(#a)"/>
+      <path d="M1544 698 H1515" marker-end="url(#a)"/>
+      <path d="M1544 784 H1515" marker-end="url(#a)"/>
+    </g>
+    <text class="tag" x="730" y="340">one turn at a time; its tools</text>
+    <text class="tag" x="730" y="377">run on the TV</text>
+    <text class="tag" x="730" y="580">the phone reaches the story</text>
+    <text class="tag" x="730" y="600">server by a pairing code</text>
+  </svg>
+
+  <p class="foot"><b>Tested:</b> 74 unit · 66 server · 79 engine tests · 28 browser steps, on the served page and on the packaged file the Vega app loads.</p>
+</div>
+</body>
+</html>

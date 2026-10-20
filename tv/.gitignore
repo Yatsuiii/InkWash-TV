@@ -1,0 +1,9 @@
+test-shots/
+node_modules/
+dist/
+# what `sam deploy --guided` saves (it can hold the GuideKey) and builds; any local secrets
+server/samconfig.toml
+server/.aws-sam/
+.env
+.env.*
+.pictures-ledger.json

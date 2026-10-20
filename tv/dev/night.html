@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Night lab</title>
+<link rel="stylesheet" href="../fonts/fonts.css">
+<style>
+  html, body { margin: 0; background: #000; color: #eee; font-family: Alegreya, Georgia, serif; }
+  #grid { display: grid; grid-template-columns: repeat(3, 640px); gap: 8px; padding: 8px; }
+  #grid canvas { width: 640px; height: 400px; display: block; }
+  #world { position: relative; width: 1920px; height: 1080px; overflow: hidden; }
+  #world canvas.glow, #world canvas.sky { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; }
+  #world .things { position: absolute; inset: 0; }
+  #world .thing { position: absolute; opacity: 0.74; }
+  #world .thing.on { opacity: 1; }
+  #world .thing .label { position: absolute; left: 50%; margin: 0; white-space: nowrap; font: 500 24px Alegreya, Georgia, serif; color: rgba(243,234,216,0.6); text-shadow: 0 0 14px rgba(120,150,255,0.6); }
+  #world .thing.on .label { font-weight: 600; font-size: 30px; color: #fff3e0; text-shadow: 0 0 16px rgba(255,170,110,0.9); }
+  #world .thing.on::after { content: ''; position: absolute; left: 50%; top: var(--water); width: var(--ring); height: calc(var(--ring) * 0.26); transform: translate(-50%, -50%); border: 2.5px solid rgba(255, 190, 130, 0.75); border-radius: 50%; box-shadow: 0 0 18px rgba(255, 154, 92, 0.6), inset 0 0 18px rgba(255, 154, 92, 0.35); }
+</style>
+</head>
+<body>
+<div id="world"></div>
+<div id="grid"></div>
+<script type="module">
+// The night look, on the demo family: their six paintings at night, and a world at night (?w=p1 or
+// p2, ?i= the thing chosen). The paper is taken as one flat colour here; the TV divides by its own.
+import DEMO from '../src/demo-family.js';
+import { cardsOf, mapOf } from '../src/cards.js';
+import { turnOf, reachOf, maskOf } from '../src/cutout.js';
+import { nightPainting, createNightWorld } from '../src/night.js';
+const q = new URL(location.href).searchParams, who = q.get('w') || 'p2';
+await document.fonts.ready;
+async function layersOf(pic) {
+  const img = new Image(); img.src = pic.image; await img.decode();
+  const c = document.createElement('canvas'); c.width = img.naturalWidth; c.height = img.naturalHeight;
+  const g = c.getContext('2d'); g.drawImage(img, 0, 0);
+  const d = g.getImageData(0, 0, c.width, c.height).data, hist = [[], [], []];
+  for (let i = 0; i < d.length; i += 64) for (let k = 0; k < 3; k++) hist[k].push(d[i + k]);
+  const paperRgb = hist.map((h) => h.sort((a, b) => a - b)[Math.floor(h.length * 0.9)]);
+  const paper = document.createElement('canvas'); paper.width = 16; paper.height = 10;
+  const pg = paper.getContext('2d'); pg.fillStyle = `rgb(${paperRgb.join(',')})`; pg.fillRect(0, 0, 16, 10);
+  return { painting: img, paper };
+}
+const layers = {};
+for (const [w, nights] of Object.entries(DEMO.paintings)) for (const [n, pic] of Object.entries(nights)) layers[`${w}:${n}`] = await layersOf(pic);
+const t0 = performance.now();
+for (const [w, nights] of Object.entries(DEMO.paintings)) for (const [n, pic] of Object.entries(nights)) {
+  const L = layers[`${w}:${n}`];
+  document.getElementById('grid').append(nightPainting({ painting: L.painting, paper: L.paper, key: `${w}:${n}`, paperKey: `paper:${w}:${n}`, strokes: pic.strokes, seed: 3 + Number(n) }));
+}
+window.paintingMs = (performance.now() - t0) / 6;
+const S = DEMO.worlds[who], cards = cardsOf(S), map = mapOf(S), pics = DEMO.paintings[who];
+const t1 = performance.now();
+const night = createNightWorld(document.getElementById('world'));
+const things = [];
+for (const c of cards) {
+  const pic = pics[c.first], L = layers[`${who}:${c.first}`];
+  const parts = pic.strokes.filter((s) => c.strokes.includes(s.n) && s.path && s.path.length).map((s) => ({ ...s, turn: turnOf(s.path), pools: [] }));
+  const box = reachOf(parts), k = L.painting.naturalWidth / 1600;
+  const mask = maskOf(parts, box, k, Math.round((box[2] - box[0]) * k), Math.round((box[3] - box[1]) * k), { steps: true });
+  things.push({ id: c.id, name: c.name, node: map.nodes.find((n) => n.id === c.id), box, k, painting: L.painting, paper: L.paper, key: `${who}:${c.first}`, paperKey: `paper:${who}:${c.first}`, mask, strokes: parts });
+}
+night.set(things, { links: map.paths });
+night.choose(cards[Number(q.get('i') || 0)].id);
+window.worldMs = performance.now() - t1;
+const loop = (t) => { night.frame(t / 1000); requestAnimationFrame(loop); };
+requestAnimationFrame(loop);
+window.night = night;
+window.done = true;
+</script>
+</body>
+</html>
