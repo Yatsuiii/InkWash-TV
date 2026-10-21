@@ -2,8 +2,9 @@
 // here, what this service keeps and for how long. Every line is what the code does; change the
 // code, change this. `contact` is where to write (GUIDE_CONTACT); `optedOut` says the AWS account
 // has opted out of AWS using Amazon Polly's input to improve Polly (GUIDE_AI_OPT_OUT=yes);
-// `pictures` is who makes the pictures: 'gemini' (Google's Gemini API) or 'bedrock'; `clips`,
-// whether a picture can be set moving (Nova Reel, reel.mjs).
+// `models` is who runs the story's models: 'anthropic' (Anthropic's API) or 'bedrock'; `pictures`,
+// who makes the pictures: 'gemini' (Google's Gemini API), 'bedrock', or 'off' with Anthropic's;
+// `clips`, whether a picture can be set moving (Nova Reel, reel.mjs).
 export const PRIVACY_HEADERS = {
   'content-type': 'text/html; charset=utf-8',
   'cache-control': 'max-age=300',
@@ -14,15 +15,50 @@ export const PRIVACY_HEADERS = {
 
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
 
-export const UPDATED = '9 October 2026';
+export const UPDATED = '21 October 2026';
 
-export function privacyPage({ contact = '', optedOut = false, pictures = 'bedrock', clips = true } = {}) {
+export function privacyPage({ contact = '', optedOut = false, models = 'bedrock', pictures = 'bedrock', clips = true } = {}) {
   const write = contact
     ? `<p>Questions, or something wrong? Write to <strong>${esc(contact)}</strong>.</p>`
     : '<p>Questions, or something wrong? Write to whoever gave you the app.</p>';
   const polly = optedOut
     ? 'This service’s AWS account has opted out of AWS using that text to improve Polly.'
     : 'Under AWS’s terms, AWS may keep that text to improve Polly, unless an account opts out; this one hasn’t yet.';
+  // who the story's models are run by (`models`), and who makes its pictures (`pictures`)
+  const byGemini = `<p>To make pictures, the server sends <strong>Google’s Gemini API</strong> what each picture is made
+from: to make a painting into a picture, the painting and a description of it written from its story;
+to paint the place, the TV’s own drawing of it; to paint a thing of your world on its own, the brush
+strokes you painted it with, in black on white, with its name and how it looks (in your own words, if
+you said how); to paint it again, the picture made of it before; and to see all around a picture, that
+picture. Google’s own terms for its paid Gemini API say how it treats what it is sent.</p>`;
+  const sends = models === 'anthropic'
+    ? `<p>The server passes these to <strong>Anthropic’s API</strong>, where Anthropic’s AI models
+(Claude) look at the painting, tell the story, ask about your world and decide where your world
+stands from its story. Anthropic’s commercial terms for its API say it doesn’t train models on
+what it is sent, and how long it keeps it.</p>
+<p>It sends the text of each line to <strong>Amazon Polly</strong>, on Amazon Web Services, which
+reads the story aloud. ${polly}</p>
+${pictures === 'gemini' ? byGemini : ''}`
+    : `<p>The server passes these to Amazon Web Services:</p>
+<ul>
+${pictures === 'gemini' ? `<li><strong>Amazon Bedrock</strong> runs the AI models that look at the painting, tell the story, ask
+about your world and decide where your world stands from its story.
+AWS says Bedrock doesn’t store or log what it is sent or what it answers, doesn’t use it to train
+models, and doesn’t share it with the companies that make the models.</li>
+<li><strong>Amazon Polly</strong> reads the story aloud: it is sent the text of each line. ${polly}</li>
+</ul>
+${byGemini}` : `<li><strong>Amazon Bedrock</strong> runs the AI models that look at the painting, tell the story, ask
+about your world, decide where your world stands from its story and paint that place, and make a
+painting into a picture (with Amazon Nova Canvas)${clips ? `, and, when you choose to watch a picture come
+alive, set it moving for a few seconds (with Amazon Nova Reel)` : ''}. To paint the place, the TV sends
+its own drawing of it; to paint a thing of your world on its own, the brush strokes you painted it
+with, in black on white, with its name and how it looks (in your own words, if you said how); to
+paint it again, the picture made of it before; and to cut it out of its white background, the
+picture just made of it.
+AWS says Bedrock doesn’t store or log what it is sent or what it answers, doesn’t use it to train
+models, and doesn’t share it with the companies that make the models.</li>
+<li><strong>Amazon Polly</strong> reads the story aloud: it is sent the text of each line. ${polly}</li>
+</ul>`}`;
   return `<!doctype html>
 <html lang="en">
 <head>
@@ -64,31 +100,7 @@ and the seal each person who paints on this TV chose are kept in the app’s own
 <li>the parts of your world the story needs, such as a thing that came back from an earlier painting;</li>
 <li>whether a young child is painting, so the storyteller and the pictures keep to what is right for a child.</li>
 </ul>
-<p>The server passes these to Amazon Web Services:</p>
-<ul>
-${pictures === 'gemini' ? `<li><strong>Amazon Bedrock</strong> runs the AI models that look at the painting, tell the story, ask
-about your world and decide where your world stands from its story.
-AWS says Bedrock doesn’t store or log what it is sent or what it answers, doesn’t use it to train
-models, and doesn’t share it with the companies that make the models.</li>
-<li><strong>Amazon Polly</strong> reads the story aloud: it is sent the text of each line. ${polly}</li>
-</ul>
-<p>To make pictures, the server sends <strong>Google’s Gemini API</strong> what each picture is made
-from: to make a painting into a picture, the painting and a description of it written from its story;
-to paint the place, the TV’s own drawing of it; to paint a thing of your world on its own, the brush
-strokes you painted it with, in black on white, with its name and how it looks (in your own words, if
-you said how); to paint it again, the picture made of it before; and to see all around a picture, that
-picture. Google’s own terms for its paid Gemini API say how it treats what it is sent.</p>` : `<li><strong>Amazon Bedrock</strong> runs the AI models that look at the painting, tell the story, ask
-about your world, decide where your world stands from its story and paint that place, and make a
-painting into a picture (with Amazon Nova Canvas)${clips ? `, and, when you choose to watch a picture come
-alive, set it moving for a few seconds (with Amazon Nova Reel)` : ''}. To paint the place, the TV sends
-its own drawing of it; to paint a thing of your world on its own, the brush strokes you painted it
-with, in black on white, with its name and how it looks (in your own words, if you said how); to
-paint it again, the picture made of it before; and to cut it out of its white background, the
-picture just made of it.
-AWS says Bedrock doesn’t store or log what it is sent or what it answers, doesn’t use it to train
-models, and doesn’t share it with the companies that make the models.</li>
-<li><strong>Amazon Polly</strong> reads the story aloud: it is sent the text of each line. ${polly}</li>
-</ul>`}
+${sends}
 <p>Only when you choose to walk inside a picture, the server sends that picture, made from your
 drawing, and the description of what it shows to <strong>World Labs</strong>, which builds it
 into a 3D world on the server’s own World Labs account, private to it. Your TV is sent the world

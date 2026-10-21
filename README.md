@@ -4,7 +4,8 @@
 story, it wakes up in a place made from that story, and your world grows a piece at a time.
 
 Our entry to the Amazon Developer Hackathon 2026, Fire TV track: a Vega OS app, with a story server
-on AWS (Amazon Bedrock, Amazon Polly, AWS Lambda, DynamoDB) and pictures from Google's Gemini.
+on AWS (AWS Lambda, Amazon Polly, DynamoDB), Claude as its storyteller and pictures from Google's
+Gemini.
 
 ![Star's world on the TV: everything drawn in it standing where it first came](tv/docs/gallery/02-their-world.jpg)
 
@@ -12,7 +13,7 @@ on AWS (Amazon Bedrock, Amazon Polly, AWS Lambda, DynamoDB) and pictures from Go
 
 - **The remote is a brush.** It draws straight into your world, in lines of light. Two buttons say
   how it felt: brighter or darker, calmer or wilder.
-- **A storyteller tells it back.** Claude Opus 5.5 on Amazon Bedrock sees the drawing as you see
+- **A storyteller tells it back.** Claude Opus 5.5 (through Anthropic's API, or on Amazon Bedrock) sees the drawing as you see
   it, asks a question or two (answer on your phone, or with the remote), and tells it as a story, a
   line at a time, read aloud by Amazon Polly. ▲ keeps a line; ▼ says "not quite" and hears it
   another way at once.
@@ -64,7 +65,7 @@ at a daily spending limit. Their worlds stay on their TV.
 
 ```sh
 cd tv && npm install && npm test && npm run e2e   # 86 unit tests; 33 browser steps at 1920 x 1080
-cd server && npm install && npm test              # 80 tests of the story server
+cd server && npm install && npm test              # 87 tests of the story server
 cd ../../engine && node --test test.mjs personal/test.mjs dreams/test.mjs   # 93 tests of the engine
 ```
 
@@ -75,7 +76,8 @@ single file, opened from `file://` as the Vega app loads it.
 ## What hasn't been tried yet
 
 - **No paid call has been made from the TV.** The real storyteller and Worldbuilder have told 24
-  worlds through Claude Code on a Claude subscription, but never through Amazon Bedrock, and no
+  worlds through Claude Code on a Claude subscription, but never from the story server (Amazon
+  Bedrock's models aren't open to our new AWS account, so it calls Anthropic's API instead), and no
   real picture, panorama or World Labs world has been made: the tests use stand-ins, Gemini's
   API among them. *Watch it come alive* (six seconds of Amazon Nova Reel) is off: AWS retired
   Nova Reel too.

@@ -1,9 +1,12 @@
-// The guide service on AWS Lambda, behind a function URL. Claude on Amazon Bedrock looks at the
-// painting (the Anthropic SDK's AnthropicBedrockMantle client), Amazon Polly speaks, and Google's
-// Gemini image models make a told painting real (gemini.mjs), since AWS retired Amazon Nova Canvas
-// on 30 September 2026; with no Gemini key, a Nova Canvas-shaped model on Bedrock still can.
+// The guide service on AWS Lambda, behind a function URL. Claude looks at the painting: through
+// Anthropic's own API when GUIDE_ANTHROPIC_KEY is set (an AWS account Bedrock isn't open to yet),
+// or on Amazon Bedrock (the Anthropic SDK's AnthropicBedrockMantle client). Amazon Polly speaks, and
+// Google's Gemini image models make a told painting real (gemini.mjs), since AWS retired Amazon Nova
+// Canvas on 30 September 2026; with no Gemini key, a Nova Canvas-shaped model on Bedrock still can.
 //
 // Configuration, all optional, from the function's environment:
+//   GUIDE_ANTHROPIC_KEY an Anthropic API key: Claude through Anthropic's API, not Bedrock (the
+//                       model IDs below are then read without their `anthropic.` prefix)
 //   GUIDE_REMARK_MODEL  default anthropic.claude-haiku-4-5
 //   GUIDE_WORLD_MODEL   default anthropic.claude-haiku-4-5: the Worldbuilder, which asks about
 //                       their world between paintings (worldbuilder.mjs)
@@ -69,15 +72,29 @@ const PHONE_CALLS = new Set(['/words', '/asked']);
 const PAID = new Set(['/remark', '/readings', '/tell', '/agent', '/wonder', '/real', '/speak', '/scene', '/backdrop', '/thing', '/wide', '/alive', '/world']);
 // pictures by Gemini: a key is set, and pictures aren't off
 const byGemini = () => process.env.GUIDE_REAL !== 'off' && !!process.env.GUIDE_GEMINI_KEY;
+// Claude through Anthropic's own API: a key is set
+const byAnthropic = () => !!process.env.GUIDE_ANTHROPIC_KEY;
+// a model as Anthropic's API names it: Bedrock's ID without its `anthropic.` (or region) prefix
+export const bareModel = (m) => String(m || '').replace(/^(?:(?:global|us|eu|apac|jp|au)\.)?anthropic\./, '');
+// a Messages API client that is given Bedrock's model IDs and asks with Anthropic's
+export const withBareModels = (client) => ({
+  messages: { create: (params, opts) => client.messages.create({ ...params, model: bareModel(params && params.model) }, opts) },
+});
 const count = (v, fallback) => (/^\d+(\.\d+)?$/.test(v || '') ? Number(v) : fallback);
 
 let clients = null;
 async function realClients() {
   if (clients) return clients;
-  const { AnthropicBedrockMantle } = await import('@anthropic-ai/bedrock-sdk');
   const { PollyClient, SynthesizeSpeechCommand } = await import('@aws-sdk/client-polly');
   const region = process.env.AWS_REGION;
-  const claude = new AnthropicBedrockMantle({ awsRegion: region });
+  let claude;
+  if (byAnthropic()) {
+    const { default: Anthropic } = await import('@anthropic-ai/sdk');
+    claude = withBareModels(new Anthropic({ apiKey: process.env.GUIDE_ANTHROPIC_KEY }));
+  } else {
+    const { AnthropicBedrockMantle } = await import('@anthropic-ai/bedrock-sdk');
+    claude = new AnthropicBedrockMantle({ awsRegion: region });
+  }
   const polly = new PollyClient({ region });
   // a line is spoken as SSML when the guide gives it (slower and softer where the dream was
   // heavier); if Polly refuses the SSML, plainly
@@ -183,7 +200,7 @@ async function answer(event, deps, once) {
   if (method === 'OPTIONS') return { statusCode: 204, headers: CORS, body: '' };
   // the phone's page: the code it is for stays in the address, read on the phone
   if (method === 'GET' && path === '/phone') return { statusCode: 200, headers: PHONE_HEADERS, body: PHONE_PAGE };
-  if (method === 'GET' && path === '/privacy') return { statusCode: 200, headers: PRIVACY_HEADERS, body: privacyPage({ contact: process.env.GUIDE_CONTACT || '', optedOut: process.env.GUIDE_AI_OPT_OUT === 'yes', pictures: byGemini() ? 'gemini' : 'bedrock', clips: !!process.env.GUIDE_ALIVE_BUCKET && process.env.GUIDE_ALIVE !== 'off' }) };
+  if (method === 'GET' && path === '/privacy') return { statusCode: 200, headers: PRIVACY_HEADERS, body: privacyPage({ contact: process.env.GUIDE_CONTACT || '', optedOut: process.env.GUIDE_AI_OPT_OUT === 'yes', models: byAnthropic() ? 'anthropic' : 'bedrock', pictures: byGemini() ? 'gemini' : process.env.GUIDE_REAL === 'off' ? 'off' : 'bedrock', clips: !!process.env.GUIDE_ALIVE_BUCKET && process.env.GUIDE_ALIVE !== 'off' }) };
   if (method === 'GET') return { statusCode: 404, headers: PRIVACY_HEADERS, body: NOT_HERE };
   if (method !== 'POST') return reply(405, { error: 'POST only' });
   const key = process.env.GUIDE_KEY;

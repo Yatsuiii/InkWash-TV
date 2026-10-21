@@ -63,7 +63,7 @@ drawing wakes into that place, Step inside opens in it, and the TV at rest shows
     walking through their world: where each thing stands in it, the eye's walk, where it stands
     before a thing (looking up to what is in the sky), and what was told of each thing, night by
     night; and each thing made real on its own: the part of the paper painted, its white cut away, how it springs up, and how a thing hops; and the opening, a night drawn as light at an even pace, never naming who tells the story; and the ledger that caps what the demo's pictures may cost; and worlds that meet: a thing visiting one world at a time, sent home, and let go with its world or its painter; nothing frightening sent to a child's world, and a child's storyteller told only what is gentle of it; where a visitor stands; and the storyteller told what is visiting, a line naming it counted as theirs, and the visitor never kept as a thing of the world it visits; never two things of one name in a world; and picture choices, an answer naming the thing of their world it says; and pictures: how they said a thing looks, on its card and in what its picture is made from, and how much of a picture Nova Canvas cut out is left; and walking inside a world built from their picture, a press a step or a turn, never far from where it was taken; and how a long story is held together: told to them as "you" (their words with how the story says them, a line in "I" sent back and then said as "you", what is kept kept as "you"), what happens next carried on from where it stopped and kept after the story so far, the last chapters word for word and older ones as fenced recaps, the other way to say a line heard at once on "not quite" (only a way that holds), and what it remembered kept with the chapter, on its page, and gone with what is forgotten; and what goes wrong: a world that can't be read opening empty with what was kept set aside, never written over; the storyteller's tools only by name; a question for the phone sent again when a poll doesn't get through; and a family kept wrongly holding one painter to an id and to a seal; and all around a picture and painted again: the panorama's sheet, looking across it with ◀ ▶, and the look a picture is painted again in, one not yet tried first;
-  - 86 tests for the story server, among them never paid twice (a request being made waited for, one made answered again for ten minutes and not counted again, only what was made kept, a world asked for twice one world), and among them it comes alive (only a picture the size Nova Reel takes, one six-second shot moving softly through its scene, asked for and looked in on until it is made and looked for only in its own job's folder, counted each day and in the day's spending, and left still when Reel's filter turns it down), walk inside (a quick world asked for from the picture and its scene, private to the guide, looked in on until it is built, the lighter file a TV can draw handed over through the guide, none without a key or past the day's count, priced as it is asked for), all around it (only a sheet and mask the size Nova Canvas widens, the picture kept and its sides painted in its own look, a child's gentle, none past the day's pictures), Gemini (each request read as one for Gemini in the same words and shape, the best model a key has found and kept, its key in a header and never in the address, Google's filter said as a refusal, and what it can't do never asked), the Worldbuilder, the Illustrator and the Set Designer (with the looks it offers,
+  - 87 tests for the story server, among them never paid twice (a request being made waited for, one made answered again for ten minutes and not counted again, only what was made kept, a world asked for twice one world), and among them it comes alive (only a picture the size Nova Reel takes, one six-second shot moving softly through its scene, asked for and looked in on until it is made and looked for only in its own job's folder, counted each day and in the day's spending, and left still when Reel's filter turns it down), walk inside (a quick world asked for from the picture and its scene, private to the guide, looked in on until it is built, the lighter file a TV can draw handed over through the guide, none without a key or past the day's count, priced as it is asked for), all around it (only a sheet and mask the size Nova Canvas widens, the picture kept and its sides painted in its own look, a child's gentle, none past the day's pictures), Gemini (each request read as one for Gemini in the same words and shape, the best model a key has found and kept, its key in a header and never in the address, Google's filter said as a refusal, and what it can't do never asked), the Worldbuilder, the Illustrator and the Set Designer (with the looks it offers,
     and what they said of how their world looks), each sent back once when its answer can't be used, what Nova Canvas is asked (for a painting, a place, or one thing alone on white; made again from the picture it had; cut out of its white, or left for the TV to cut when it can't be), their own words for a thing first in every picture of it, a child's picture, the day's
     pictures counted, the day's spending priced and stopped at its limit, each caller's calls
     limited, phone pairings no one came back to let go, errors told without their details, the privacy page and the template held to what the code does, and
@@ -111,9 +111,9 @@ drawing wakes into that place, Step inside opens in it, and the TV at rest shows
     the sky, ▶‖ its night as it was told, read aloud, and Back walks home; and left on the seals, the TV rests, showing the family's paintings, each in its own world's place. Last, the TV is filled almost to its limit, and the
     seals say so; then to the brim, so Moon's world no longer fits: it is kept in IndexedDB
     instead, read from there after the TV is turned off and on, and moved back once there is room.
-- **Not yet tried on Bedrock.** The real storyteller and Worldbuilder have told 24 worlds, three of
+- **Not yet tried from the story server.** The real storyteller and Worldbuilder have told 24 worlds, three of
   them for 22 nights, through Claude Code on a Claude subscription (`npm run cli`), but never
-  through Amazon Bedrock, and Dream it real has never made a real picture: the tests use a
+  from the story server (through Anthropic's API or Amazon Bedrock), and Dream it real has never made a real picture: the tests use a
   stand-in picture. Pictures were built on Amazon Nova Canvas, and clips on Nova Reel; AWS retired
   both on 30 September 2026, so pictures now come from Google's Gemini image models
   (`server/gemini.mjs`, which reads each request in the shape the server already builds for Nova
@@ -128,10 +128,12 @@ drawing wakes into that place, Step inside opens in it, and the TV at rest shows
   boot, and the cloud machine this was built on has none; and it runs a WebView app only on an
   Apple Silicon Mac (not on Ubuntu, an Intel Mac or Windows), so that is where to try it.
 - **The story server** (`server/`) is written and tested against stand-ins. **It has been deployed
-  once, in part**: its voice (Polly) and its privacy page answer; the storyteller waits on AWS
-  turning on Anthropic's models for the account, and pictures on a Gemini key. Why there is a server at all: Claude runs in Amazon Bedrock,
-  and calling it takes AWS credentials, which can't go inside a TV app (anyone could pull them
-  out). So a small Lambda function in your AWS account holds them: the TV sends it each turn of
+  once, in part**: its voice (Polly) and its privacy page answer. Bedrock's models aren't open to
+  our new AWS account, so the storyteller calls Claude through Anthropic's own API instead (an
+  `AnthropicKey`; the same models, and Bedrock still works for an account that has it), and
+  pictures come from Gemini (a `GeminiKey`). Why there is a server at all: calling Claude takes a
+  key or AWS credentials, which can't go inside a TV app (anyone could pull them out). So a small
+  Lambda function in your AWS account holds them: the TV sends it each turn of
   the storyteller's, and it passes it to Claude and back. It also makes the voice (Amazon Polly),
   makes paintings real (Google's Gemini, at most `RealPicturesPerDay` a day) and pairs a
   phone. It keeps no paintings or stories. Without it, the TV still paints, keeps each world and
@@ -586,8 +588,11 @@ ink, the map and the checks are code, and only where judgement is wanted is a mo
   dream, and failing that, your line is told plainly.
 - **Voice:** Amazon Polly's neural voice Ruth. If your region doesn't offer it, choose another
   with the template's `Voice` parameter (Kajal, for Indian English).
-- **Client:** Claude is called through the Anthropic SDK's `AnthropicBedrockMantle` client.
-- **Region:** Claude in Amazon Bedrock serves Mumbai (`ap-south-1`) on its global endpoint.
+- **Client:** Claude is called through the Anthropic SDK: its `Anthropic` client with an
+  `AnthropicKey` (the model IDs read without their `anthropic.` prefix), or else its
+  `AnthropicBedrockMantle` client on Amazon Bedrock.
+- **Region:** Claude in Amazon Bedrock serves Mumbai (`ap-south-1`) on its global endpoint;
+  Anthropic's API serves any region.
 
 ## Your dream, night after night
 
@@ -866,7 +871,7 @@ node scripts/motion-sheet.mjs   # how things move, frame by frame: contact sheet
 
 cd server
 npm install
-npm test            # 86 tests, with stand-ins for Claude, Gemini, Nova Canvas, Nova Reel, World Labs, Polly and DynamoDB
+npm test            # 87 tests, with stand-ins for Claude, Gemini, Nova Canvas, Nova Reel, World Labs, Polly and DynamoDB
 npm run stand-in    # a scripted storyteller on http://localhost:5188 that calls the tools like the real one
 npm run dev         # the real storyteller, with your AWS credentials
 npm run cli         # the real storyteller through Claude Code (claude -p), on the Claude subscription
@@ -898,10 +903,13 @@ The browser test uses the Playwright that's installed globally (`npm root -g`) a
 
 You need an AWS account and the AWS SAM CLI.
 
-1. Pick the region: **us-east-1 (N. Virginia)** has Claude. Bedrock's models are on for every
-   account there (AWS retired its "Model access" page in October 2025); the one step left is
-   Anthropic's one-time use-case form, filled in once in the Bedrock console (open the chat
-   playground, choose a Claude model, and it asks). For pictures, get a Gemini API key from Google
+1. Pick the region: **us-east-1 (N. Virginia)**. For the storyteller, either make an Anthropic
+   API key at console.anthropic.com (buy a few dollars of credits, and set a spend limit there),
+   and give it as `AnthropicKey`; or leave that empty to use Claude on Amazon Bedrock, whose
+   models are on for most accounts (AWS retired its "Model access" page in October 2025) once
+   Anthropic's one-time use-case form is filled in, in the Bedrock console (open the chat
+   playground, choose a Claude model, and it asks). A new account may find Bedrock's models
+   closed to it, as ours did (FRICTION_LOG entry 15). For pictures, get a Gemini API key from Google
    AI Studio (aistudio.google.com) on a Google Cloud project with billing on (Gemini 3 Pro Image
    has no free tier), and give it as `GeminiKey`; without one, set `RealPictures=off` to keep the
    ink. Drawings are then sent to Google to be painted, and the privacy page says so.
@@ -914,9 +922,9 @@ You need an AWS account and the AWS SAM CLI.
    ```
 
    It asks for a `GuideKey` (at least 16 characters: make it long and random), an `AlertEmail`,
-   how much it may spend (`SpendPerDay`, `MonthlyBudget`), and the `GeminiKey` (type it there,
-   never into a chat; it is kept in the function's settings, which anyone who can open the function
-   in the console can read). `PicturePrice` (15 cents) is what each picture is counted at in
+   how much it may spend (`SpendPerDay`, `MonthlyBudget`), the `AnthropicKey` and the `GeminiKey`
+   (type them there, never into a chat; they are kept in the function's settings, which anyone who
+   can open the function in the console can read). `PicturePrice` (15 cents) is what each picture is counted at in
    `SpendPerDay`, so the day's cap holds Gemini's pictures too; but the AWS budget's action can't
    stop a Google bill, so set a budget on the Google Cloud project as well. `sam deploy --guided` saves your
    answers in `server/samconfig.toml`, which git ignores: it can hold the key.
@@ -948,7 +956,8 @@ You need an AWS account and the AWS SAM CLI.
 5. **Opt out of AWS keeping what Polly reads**, if you can: AWS may keep the text Amazon Polly
    speaks to improve Polly unless the account opts out, with an AI services opt-out policy in AWS
    Organizations (a free organization of one account will do). Then deploy again with
-   `AIOptOut=yes`, and the privacy page says so. Amazon Bedrock keeps nothing either way.
+   `AIOptOut=yes`, and the privacy page says so. Amazon Bedrock keeps nothing either way;
+   Anthropic's API keeps what it is sent as its commercial terms say, and doesn't train on it.
 6. **The privacy page** is at `<guide URL>privacy` (the deploy prints it as `PrivacyUrl`): what the
    TV keeps, what it sends, what the server keeps and for how long, and short terms. Set `Contact`
    to where people can write; it is shown there, so it is public. It is what an app listing asks for.
@@ -956,9 +965,9 @@ You need an AWS account and the AWS SAM CLI.
 **What it may spend.** Anyone with the URL can call it, and the key ships inside the app, so it
 keeps out casual callers only. What protects the bill:
 - **The day's spending** (`SpendPerDay`, $10 by default; `server/limits.mjs`). Every call to Claude,
-  every line Polly reads and every picture is priced as it is used, from the usage Bedrock returns,
+  every line Polly reads and every picture is priced as it is used, from the usage Claude returns,
   at list prices plus 10% (a model with no price there counts as the dearest), and added up in the
-  DynamoDB table. Once a day (UTC) reaches it, the guide asks Bedrock and Polly for nothing more
+  DynamoDB table. Once a day (UTC) reaches it, the guide asks Claude, Gemini and Polly for nothing more
   until midnight: it answers `429`, the TV tells offline, and you get an email. A call already under
   way finishes, so a day can end a little over.
 - **Never paid twice** (`server/once.mjs`). A picture, a thing's picture, a place, a clip, a world
@@ -972,7 +981,8 @@ keeps out casual callers only. What protects the bill:
 - **The month's bill:** an AWS Budget (`MonthlyBudget`, $50 by default, for the whole account, after
   any credits) emails you at half, at 80% and when the month is forecast to go over. At all of it,
   its action attaches a policy to the guide's role that denies Bedrock and Polly; reverse the action
-  in the Budgets console to go on. Billing data runs hours behind, which is why the guide counts for
+  in the Budgets console to go on. It can't stop Anthropic's or Google's bills: set a spend limit
+  in the Anthropic console and a budget on the Google Cloud project for those. Billing data runs hours behind, which is why the guide counts for
   itself too. The action can't be tried without reaching the budget, so treat the day's spending as
   the guard and the budget as the backstop.
 - **Alerts** go to `AlertEmail` when the guide answers with errors five times in five minutes, when
@@ -1041,7 +1051,7 @@ its stories itself. So:
 - **DynamoDB:** a few writes per telling, and a few per thing said on the phone.
 - **Polly:** charges per character it reads.
 
-Check the Amazon Bedrock, DynamoDB and Polly pricing pages for your region's rates.
+Check Anthropic's (or Amazon Bedrock's), Google's Gemini, DynamoDB and Polly pricing pages for current rates.
 
 **Set `CommonsSalt`** to a long random value when you deploy, and keep it. It's what makes the
 commons' hashes unreadable.
@@ -1126,7 +1136,7 @@ npm run build:release   # build/<arch>-release/inkwashtv_<arch>.vpkg
 | `server/agent-standin.mjs` | A script standing in for Claude as the storyteller, for the tests and the dev server: it calls every tool the way the storyteller would |
 | `server/guide.mjs` | The story server's core: its routes, the remarks, and the pipeline the agent replaced (`/tell`, `/readings`), kept as the fallback |
 | `server/phone.mjs` | Pairings with a phone (in memory, or in DynamoDB), and the page the phone opens |
-| `server/lambda.mjs` | The storyteller on AWS Lambda: Claude on Amazon Bedrock, pictures by Gemini (or a Nova Canvas-shaped model on Bedrock, without a key), Amazon Polly; each caller's calls limited, the day's spending checked first, and nothing but "it went wrong" told to a caller when it does |
+| `server/lambda.mjs` | The storyteller on AWS Lambda: Claude through Anthropic's API (with a key) or on Amazon Bedrock, pictures by Gemini (or a Nova Canvas-shaped model on Bedrock, without a key), Amazon Polly; each caller's calls limited, the day's spending checked first, and nothing but "it went wrong" told to a caller when it does |
 | `server/limits.mjs` | What the guide may spend in a day (every call priced from its usage and counted, in memory or in DynamoDB) and how often one caller may call |
 | `server/once.mjs` | The same paid request is never paid twice: one being made is waited for, one made is answered again for ten minutes |
 | `server/privacy.mjs` | The privacy notice and terms, served at `/privacy` |

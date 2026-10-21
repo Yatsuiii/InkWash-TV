@@ -239,6 +239,14 @@ test('the privacy page says what the code does', () => {
   assert.doesNotMatch(g, /Nova Canvas|Nova Reel/);
   assert.match(g, /the brush\s+strokes you painted it\s+with, in black on white/);
   assert.doesNotMatch(privacyPage({ clips: false }), /A clip, for a day|Nova Reel/, 'no clips made, none said');
+  // Claude through Anthropic's own API: said so, with Polly still on AWS, and Bedrock named nowhere
+  const a = privacyPage({ models: 'anthropic', pictures: 'gemini', clips: false });
+  assert.match(a, /Anthropic’s API<\/strong>, where Anthropic’s AI models\s+\(Claude\) look at the painting/);
+  assert.match(a, /doesn’t train models on\s+what it is sent/);
+  assert.match(a, /<strong>Amazon Polly<\/strong>, on Amazon Web Services/);
+  assert.match(a, /Google’s Gemini API/);
+  assert.doesNotMatch(a, /Bedrock|Nova/);
+  assert.doesNotMatch(privacyPage({ models: 'anthropic', pictures: 'off', clips: false }), /Gemini|Bedrock|Nova/, 'no pictures made, none said');
   assert.match(privacyPage(), /A clip, for a day/);
 });
 
@@ -263,4 +271,19 @@ test('the template holds to the code: alarms on the lines the guide logs, its lo
   // the key may not be left out, and the budget's action takes away only what costs money
   assert.match(template, /GuideKey:\n    Type: String\n    NoEcho: true\n    MinLength: 16\n/);
   assert.match(template, /Effect: Deny\n            Action: \[bedrock-mantle:CreateInference, bedrock:InvokeModel, bedrock:StartAsyncInvoke, polly:SynthesizeSpeech\]/);
+});
+
+test('Claude through Anthropic\'s own API: Bedrock\'s model IDs asked for by Anthropic\'s names, the rest as it was', async () => {
+  const { bareModel, withBareModels } = await import('../lambda.mjs');
+  assert.deepEqual(['anthropic.claude-opus-5-5', 'us.anthropic.claude-haiku-4-5', 'global.anthropic.claude-haiku-4-5', 'claude-opus-5-5'].map(bareModel),
+    ['claude-opus-5-5', 'claude-haiku-4-5', 'claude-haiku-4-5', 'claude-opus-5-5']);
+  const asked = [];
+  const client = withBareModels({ messages: { async create(p, o) { asked.push([p, o]); return { content: [], usage: {} }; } } });
+  const params = { model: 'anthropic.claude-opus-5-5', max_tokens: 10, system: [{ type: 'text', text: 'x', cache_control: { type: 'ephemeral' } }], messages: [{ role: 'user', content: 'Hi' }] };
+  await client.messages.create(params, { timeout: 5 });
+  assert.deepEqual(asked[0], [{ ...params, model: 'claude-opus-5-5' }, { timeout: 5 }]);
+  assert.equal(params.model, 'anthropic.claude-opus-5-5', 'what was asked is left as it was');
+  // counted at the same price either way
+  const usage = { input_tokens: 1000, output_tokens: 100 };
+  assert.equal(costOf('claude-opus-5-5', usage), costOf('anthropic.claude-opus-5-5', usage));
 });

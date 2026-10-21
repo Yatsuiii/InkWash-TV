@@ -201,7 +201,7 @@ against Bedrock, it says so.
 - **Would have helped:** one Bedrock action to deny everything that costs, or a line about it in
   Reel's documentation.
 
-### 15. The image and video models we built on were retired, and Claude needed a form first
+### 15. The image and video models we built on were retired, and Bedrock was closed to a new account
 
 - **Doing:** turning the story server on for real in a new AWS account, two days before the deadline.
 - **What happened:** Amazon Nova Canvas, which made every picture (a drawing made real, a place, each
@@ -209,18 +209,23 @@ against Bedrock, it says so.
   30 September 2026. We had built on them without checking Bedrock's model lifecycle page. The
   image model nearest in kind on Bedrock, Titan Image Generator v2, had reached its end on 30 June
   2026. Separately, Claude on Bedrock first needs Anthropic's one-time use-case form, and for our
-  account it answered "not authorized"; a support case is open.
+  account it answered "not authorized"; then none of Bedrock's models could be reached from our
+  new account at all. A support case is open.
 - **Got past it:**
   - every picture is still asked for as one request body; a small adapter (`server/gemini.mjs`)
     reads that body and asks Google's Gemini image models for the same picture, so the TV didn't
     change, except to fit a 3:2 picture back to its 16:10 paper and to cut things out itself;
   - the privacy page says, when Gemini is on, that drawings go to Google;
   - clips are off by default, and the TV never offers them;
-  - the storyteller can run on Claude Code for recording (`npm run cli`) until Bedrock's Claude is
-    on for the account.
+  - the storyteller calls Claude through Anthropic's own API when the template is given an
+    `AnthropicKey`: the same Messages API, the same models, Bedrock's model IDs read without their
+    `anthropic.` prefix, so nothing else changed; Bedrock stays the default for an account that
+    has it.
 - **Would have helped:** a retirement notice in the console next to a model we were calling, a
-  named successor for each retired model, and the use-case form's answer saying why.
-- **Not yet verified:** Gemini is tested against a stand-in of its API, not yet called for real.
+  named successor for each retired model, and the use-case form's answer, or Bedrock's refusal,
+  saying why and what a new account needs.
+- **Not yet verified:** Gemini and Anthropic's API are tested against stand-ins, not yet called
+  for real from the story server.
 
 ## What we would ask for first
 

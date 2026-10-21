@@ -70,6 +70,11 @@ Parameters:
     Default: 'nova'
     AllowedValues: ['nova', 'tv']
     Description: How each thing made real is cut out of its white background. nova asks Amazon Nova Canvas to remove it (one more picture a thing, counted in RealPicturesPerDay); tv has the TV cut the white away itself, for nothing.
+  AnthropicKey:
+    Type: String
+    NoEcho: true
+    Default: ''
+    Description: An Anthropic API key (console.anthropic.com). Set, Claude is called through Anthropic's own API, not Amazon Bedrock, for an account Bedrock's Claude isn't open to yet; the model IDs above work either way. Empty, Claude on Bedrock.
   GeminiKey:
     Type: String
     NoEcho: true
@@ -159,6 +164,7 @@ Resources:
           GUIDE_REAL: !Ref RealPictures
           GUIDE_REAL_PER_DAY: !Ref RealPicturesPerDay
           GUIDE_REAL_MODEL: !Ref RealModel
+          GUIDE_ANTHROPIC_KEY: !Ref AnthropicKey
           GUIDE_GEMINI_KEY: !Ref GeminiKey
           GUIDE_GEMINI_MODEL: !Ref GeminiModel
           GUIDE_PICTURE_PRICE: !Ref PicturePrice
