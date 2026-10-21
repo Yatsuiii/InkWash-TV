@@ -25,6 +25,25 @@ against Bedrock, it says so.
   - a lighter, software-only preview of the WebView runtime for headless CI;
   - or a hosted simulator.
 
+### 1a. The simulator can't run a WebView app on Linux or an Intel Mac, and the SDK doesn't run on Windows
+
+- **Doing:** planning the demo video, which must show the app on a Fire TV or the Fire TV/Vega
+  simulator, from a Windows PC and a cloud Linux machine.
+- **What happened:** the Vega SDK is for macOS and Ubuntu only (Windows isn't supported, and WSL
+  isn't tested). And the Vega Virtual Device doesn't support WebView on Ubuntu or on Intel Macs:
+  the troubleshooting page says to use an Apple Silicon Mac or a Fire TV Stick 4K Select, and lists
+  the error a WebView app gets on Ubuntu (`Module dependency not found:
+  /com.amazon.vega.webview_3@IWebview_3`). Inkwash's Vega app is a WebView around its page, so on
+  our machines there was no simulator it could run in, even with KVM (entry 1). We found this two
+  days before the deadline, on the troubleshooting page, not on the WebView or install pages.
+- **Got past it:** not yet: the video has to be made on an Apple Silicon Mac or a Fire TV Stick 4K
+  Select.
+- **Would have helped:**
+  - the platforms that can run a WebView app named on the WebView quick-start and the install page,
+    and in the hackathon's resources, since the Fire TV track invites web apps;
+  - WebView in the simulator on Ubuntu;
+  - or a hosted simulator.
+
 ### 2. A packaged web page can't load ES modules or web fonts from `file://`
 
 - **Doing:** packaging our web app inside the Vega app, loaded as
@@ -184,6 +203,6 @@ against Bedrock, it says so.
 ## What we would ask for first
 
 1. A key-event table for the Vega WebView (entries 3, 4 and 5).
-2. A way to run and see a Vega app without KVM (entry 1).
+2. A way to run and see a Vega app without KVM, and a WebView app on any platform the SDK supports (entries 1 and 1a).
 3. A Bedrock note for anyone proxying Claude's conversations (entry 8).
 4. Short Nova Reel clips returned inline, or each job's exact key (entry 12).

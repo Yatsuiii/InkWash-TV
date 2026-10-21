@@ -122,7 +122,8 @@ drawing wakes into that place, Step inside opens in it, and the TV at rest shows
   wakes up in its world's place (drawn by the TV), or at night, made on the TV, for free.
 - **Packaged as a Vega app** (`vega/`): it builds for the Vega Virtual Device and for Fire TV
   sticks. **It has not yet run on either.** The simulator needs hardware acceleration (KVM) to
-  boot, and the cloud machine this was built on has none.
+  boot, and the cloud machine this was built on has none; and it runs a WebView app only on an
+  Apple Silicon Mac (not on Ubuntu, an Intel Mac or Windows), so that is where to try it.
 - **The story server** (`server/`) is written and tested against stand-ins. **It isn't deployed
   yet**; that needs an AWS account. Why there is a server at all: Claude runs in Amazon Bedrock,
   and calling it takes AWS credentials, which can't go inside a TV app (anyone could pull them

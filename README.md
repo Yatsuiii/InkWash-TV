@@ -77,8 +77,9 @@ single file, opened from `file://` as the Vega app loads it.
   worlds through Claude Code on a Claude subscription, but never through Amazon Bedrock, and no
   real picture, clip, panorama or World Labs world has been made: the tests use stand-ins.
 - **The Vega app has not run on a device.** It builds for the Vega Virtual Device and for Fire TV
-  sticks, but the simulator needs hardware acceleration (KVM), which our build machine lacked, so
-  everything was tested in Chromium at 1920 × 1080 with the remote's keys.
+  sticks, but our build machine had no hardware acceleration (KVM), and the simulator runs a
+  WebView app only on an Apple Silicon Mac, so everything was tested in Chromium at 1920 × 1080
+  with the remote's keys.
 
 ## Licence
 
