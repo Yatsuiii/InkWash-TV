@@ -1,7 +1,9 @@
 // The privacy notice and terms, served at /privacy by the guide: what the TV keeps, what it sends
 // here, what this service keeps and for how long. Every line is what the code does; change the
 // code, change this. `contact` is where to write (GUIDE_CONTACT); `optedOut` says the AWS account
-// has opted out of AWS using Amazon Polly's input to improve Polly (GUIDE_AI_OPT_OUT=yes).
+// has opted out of AWS using Amazon Polly's input to improve Polly (GUIDE_AI_OPT_OUT=yes);
+// `pictures` is who makes the pictures: 'gemini' (Google's Gemini API) or 'bedrock'; `clips`,
+// whether a picture can be set moving (Nova Reel, reel.mjs).
 export const PRIVACY_HEADERS = {
   'content-type': 'text/html; charset=utf-8',
   'cache-control': 'max-age=300',
@@ -14,7 +16,7 @@ const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&
 
 export const UPDATED = '9 October 2026';
 
-export function privacyPage({ contact = '', optedOut = false } = {}) {
+export function privacyPage({ contact = '', optedOut = false, pictures = 'bedrock', clips = true } = {}) {
   const write = contact
     ? `<p>Questions, or something wrong? Write to <strong>${esc(contact)}</strong>.</p>`
     : '<p>Questions, or something wrong? Write to whoever gave you the app.</p>';
@@ -64,10 +66,21 @@ and the seal each person who paints on this TV chose are kept in the app’s own
 </ul>
 <p>The server passes these to Amazon Web Services:</p>
 <ul>
-<li><strong>Amazon Bedrock</strong> runs the AI models that look at the painting, tell the story, ask
+${pictures === 'gemini' ? `<li><strong>Amazon Bedrock</strong> runs the AI models that look at the painting, tell the story, ask
+about your world and decide where your world stands from its story.
+AWS says Bedrock doesn’t store or log what it is sent or what it answers, doesn’t use it to train
+models, and doesn’t share it with the companies that make the models.</li>
+<li><strong>Amazon Polly</strong> reads the story aloud: it is sent the text of each line. ${polly}</li>
+</ul>
+<p>To make pictures, the server sends <strong>Google’s Gemini API</strong> what each picture is made
+from: to make a painting into a picture, the painting and a description of it written from its story;
+to paint the place, the TV’s own drawing of it; to paint a thing of your world on its own, the brush
+strokes you painted it with, in black on white, with its name and how it looks (in your own words, if
+you said how); to paint it again, the picture made of it before; and to see all around a picture, that
+picture. Google’s own terms for its paid Gemini API say how it treats what it is sent.</p>` : `<li><strong>Amazon Bedrock</strong> runs the AI models that look at the painting, tell the story, ask
 about your world, decide where your world stands from its story and paint that place, and make a
-painting into a picture (with Amazon Nova Canvas), and, when you choose to watch a picture come
-alive, set it moving for a few seconds (with Amazon Nova Reel). To paint the place, the TV sends
+painting into a picture (with Amazon Nova Canvas)${clips ? `, and, when you choose to watch a picture come
+alive, set it moving for a few seconds (with Amazon Nova Reel)` : ''}. To paint the place, the TV sends
 its own drawing of it; to paint a thing of your world on its own, the brush strokes you painted it
 with, in black on white, with its name and how it looks (in your own words, if you said how); to
 paint it again, the picture made of it before; and to cut it out of its white background, the
@@ -75,7 +88,7 @@ picture just made of it.
 AWS says Bedrock doesn’t store or log what it is sent or what it answers, doesn’t use it to train
 models, and doesn’t share it with the companies that make the models.</li>
 <li><strong>Amazon Polly</strong> reads the story aloud: it is sent the text of each line. ${polly}</li>
-</ul>
+</ul>`}
 <p>Only when you choose to walk inside a picture, the server sends that picture, made from your
 drawing, and the description of what it shows to <strong>World Labs</strong>, which builds it
 into a 3D world on the server’s own World Labs account, private to it. Your TV is sent the world
@@ -93,10 +106,10 @@ of it says who painted what.</li>
 <li><strong>Your phone’s words, briefly.</strong> While your phone is paired with your TV, what you
 say on it waits here until your TV picks it up, and is then deleted. A pairing ends after 30
 minutes; anything still in it is never passed on, and is deleted automatically soon after.</li>
-<li><strong>A clip, for a day.</strong> When you choose to watch a picture come alive, Nova Reel
+${clips ? `<li><strong>A clip, for a day.</strong> When you choose to watch a picture come alive, Nova Reel
 writes the few seconds of it to private storage on the server’s AWS account. Your TV fetches it
 from there and keeps it, and the storage deletes it a day after it was made.</li>
-<li><strong>Daily totals.</strong> How many pictures, clips and worlds were made each day and what the
+` : ''}<li><strong>Daily totals.</strong> How many pictures, clips and worlds were made each day and what the
 day’s requests cost, so the server stops for the day before it costs too much.</li>
 <li><strong>Error logs</strong>, for 14 days: short technical notes about what went wrong, which can
 include a few words from the request that failed.</li>

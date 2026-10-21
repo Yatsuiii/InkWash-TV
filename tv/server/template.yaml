@@ -59,7 +59,7 @@ Parameters:
     Type: String
     Default: 'on'
     AllowedValues: ['on', 'off']
-    Description: Dream it real. Each told painting is made into a picture by Amazon Nova Canvas, a few cents a picture. Off keeps the ink.
+    Description: Dream it real. Each told painting is made into a picture, by Google's Gemini if GeminiKey is set (AWS retired Amazon Nova Canvas on 30 September 2026). Off keeps the ink.
   RealPicturesPerDay:
     Type: Number
     Default: 60
@@ -70,6 +70,20 @@ Parameters:
     Default: 'nova'
     AllowedValues: ['nova', 'tv']
     Description: How each thing made real is cut out of its white background. nova asks Amazon Nova Canvas to remove it (one more picture a thing, counted in RealPicturesPerDay); tv has the TV cut the white away itself, for nothing.
+  GeminiKey:
+    Type: String
+    NoEcho: true
+    Default: ''
+    Description: A Gemini API key (Google AI Studio, with billing on). Set, pictures are made by Google's Gemini image models, and each thing is cut out of its white by the TV. Empty, by RealModel on Bedrock.
+  GeminiModel:
+    Type: String
+    Default: gemini-3-pro-image-preview
+    Description: The Gemini image model to ask first (if this key lacks it, the next in gemini.mjs is tried).
+  PicturePrice:
+    Type: String
+    Default: '0.15'
+    AllowedPattern: '^\d+(\.\d+)?$'
+    Description: What one picture is counted at in the day's spending (SpendPerDay), in dollars. Set it at or above what your image model charges (Gemini 3 Pro Image is about 13.4 cents a picture at 1K or 2K, plus a little for what it is sent).
   RealModel:
     Type: String
     Default: amazon.nova-canvas-v1:0
@@ -80,9 +94,9 @@ Parameters:
     Description: Where to call the image model, if not in this stack's region (it is not offered in every region).
   AliveClips:
     Type: String
-    Default: 'on'
+    Default: 'off'
     AllowedValues: ['on', 'off']
-    Description: It comes alive. A picture made real can be set moving, six seconds of it, by Amazon Nova Reel, about 50 cents a clip, only when someone chooses to watch it. Nova Reel is in us-east-1, so clips are made only by a stack deployed there; off, or in any other region, the picture stays still.
+    Description: It comes alive. A picture made real can be set moving, six seconds of it, by Amazon Nova Reel, about 50 cents a clip, only when someone chooses to watch it. AWS retired Nova Reel on 30 September 2026, so this stays off unless an account still has it; on, it works only in us-east-1. Off, the picture stays still.
   AliveClipsPerDay:
     Type: Number
     Default: 6
@@ -145,6 +159,9 @@ Resources:
           GUIDE_REAL: !Ref RealPictures
           GUIDE_REAL_PER_DAY: !Ref RealPicturesPerDay
           GUIDE_REAL_MODEL: !Ref RealModel
+          GUIDE_GEMINI_KEY: !Ref GeminiKey
+          GUIDE_GEMINI_MODEL: !Ref GeminiModel
+          GUIDE_PICTURE_PRICE: !Ref PicturePrice
           GUIDE_REAL_REGION: !Ref RealRegion
           GUIDE_CUTOUT: !Ref ThingCutout
           GUIDE_SPEND_PER_DAY: !Ref SpendPerDay

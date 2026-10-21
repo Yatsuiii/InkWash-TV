@@ -918,7 +918,7 @@ try {
     void seen; void steps;
   });
 
-  await check('their own words for a thing: said on the phone, kept on its card and in their world, and the night ferry made again from the picture it had, as they said, and cut out by Nova Canvas; let go, it is made again as it was', async () => {
+  await check('their own words for a thing: said on the phone, kept on its card and in their world, and the night ferry made again from the picture it had, as they said, and cut out by the image model; let go, it is made again as it was', async () => {
     await page.waitForFunction(() => window.__inktv.mode === 'atlas' && window.__inktv.atlas && window.__inktv.atlas.made >= 1, null, { timeout: 20000 });
     // the TV was opened again since the phone was paired: paired again, to its new code; and the
     // choice to say how a thing looks comes as it does

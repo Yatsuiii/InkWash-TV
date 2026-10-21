@@ -1,6 +1,7 @@
 // The guide service on AWS Lambda, behind a function URL. Claude on Amazon Bedrock looks at the
-// painting (the Anthropic SDK's AnthropicBedrockMantle client), Amazon Polly speaks, and Amazon
-// Nova Canvas on Bedrock makes a told painting real.
+// painting (the Anthropic SDK's AnthropicBedrockMantle client), Amazon Polly speaks, and Google's
+// Gemini image models make a told painting real (gemini.mjs), since AWS retired Amazon Nova Canvas
+// on 30 September 2026; with no Gemini key, a Nova Canvas-shaped model on Bedrock still can.
 //
 // Configuration, all optional, from the function's environment:
 //   GUIDE_REMARK_MODEL  default anthropic.claude-haiku-4-5
@@ -14,7 +15,10 @@
 //   GUIDE_VOICE         Polly voice, default Ruth
 //   GUIDE_ENGINE        Polly engine, default neural
 //   GUIDE_REAL          off: make no pictures (Dream it real); the TV keeps the ink
-//   GUIDE_REAL_MODEL    default amazon.nova-canvas-v1:0, the image model that paints them
+//   GUIDE_GEMINI_KEY    a Gemini API key (Google AI Studio): pictures are made by Gemini
+//   GUIDE_GEMINI_MODEL  which Gemini image model first; without it, gemini.mjs's order
+//   GUIDE_PICTURE_PRICE what one picture is counted at in the day's spending, in dollars
+//   GUIDE_REAL_MODEL    without a Gemini key, the Bedrock image model that paints them
 //   GUIDE_REAL_REGION   where it is called, default AWS_REGION (it is not in every region)
 //   GUIDE_REAL_PER_DAY  the most pictures a day, default 60; a few cents each (budget.mjs)
 //   GUIDE_CUTOUT        'tv' to have the TV cut each thing out of its white, not Nova Canvas
@@ -45,6 +49,7 @@ import { handle, MODELS } from './guide.mjs';
 import { REAL } from './illustrator.mjs';
 import { REEL } from './reel.mjs';
 import { worldLabs } from './marble.mjs';
+import { geminiPaint } from './gemini.mjs';
 import { memoryBudget, dynamoBudget } from './budget.mjs';
 import { memoryCommons, dynamoCommons } from './commons-store.mjs';
 import { memorySessions, dynamoSessions, PHONE_PAGE, PHONE_HEADERS } from './phone.mjs';
@@ -62,6 +67,8 @@ const CORS = {
 const PHONE_CALLS = new Set(['/words', '/asked']);
 // what costs money: a model, a voice or a picture
 const PAID = new Set(['/remark', '/readings', '/tell', '/agent', '/wonder', '/real', '/speak', '/scene', '/backdrop', '/thing', '/wide', '/alive', '/world']);
+// pictures by Gemini: a key is set, and pictures aren't off
+const byGemini = () => process.env.GUIDE_REAL !== 'off' && !!process.env.GUIDE_GEMINI_KEY;
 const count = (v, fallback) => (/^\d+(\.\d+)?$/.test(v || '') ? Number(v) : fallback);
 
 let clients = null;
@@ -84,9 +91,12 @@ async function realClients() {
     if (ssml) { try { return await say(ssml, 'ssml'); } catch (err) { console.log(`Polly refused the SSML (${err.name}); speaking plainly`); } }
     return say(text, 'text');
   };
-  // Dream it real: Nova Canvas, given its request body, gives back one picture (base64)
+  // Dream it real: given a Nova Canvas request body, one picture back (base64): from Gemini, or
+  // from a Bedrock model that takes Nova Canvas's requests
   let paint = null;
-  if (process.env.GUIDE_REAL !== 'off') {
+  if (byGemini()) {
+    paint = geminiPaint({ key: process.env.GUIDE_GEMINI_KEY, model: process.env.GUIDE_GEMINI_MODEL || null, log: (m) => console.log(m) });
+  } else if (process.env.GUIDE_REAL !== 'off') {
     const { BedrockRuntimeClient, InvokeModelCommand } = await import('@aws-sdk/client-bedrock-runtime');
     const canvas = new BedrockRuntimeClient({ region: process.env.GUIDE_REAL_REGION || region });
     paint = async (body) => {
@@ -145,7 +155,8 @@ async function realClients() {
     spend = dynamoSpend({ client, table, commands: { GetItemCommand, UpdateItemCommand }, perDay: spendPerDay });
   }
   // every call to Bedrock and Polly priced and counted, and none once the day's spending is reached
-  const paid = metered({ claude, speak, paint, reel, marble }, { spend, log: (m) => console.log(m) });
+  const price = Number(process.env.GUIDE_PICTURE_PRICE);
+  const paid = metered({ claude, speak, paint, reel, marble }, { spend, log: (m) => console.log(m), ...(price > 0 ? { picture: price } : {}) });
   clients = { ...paid, commons, sessions, budget, clips, worlds, spend, callers: callerLimits({ paid: count(process.env.GUIDE_CALLS_PER_CALLER, 150) }) };
   return clients;
 }
@@ -172,7 +183,7 @@ async function answer(event, deps, once) {
   if (method === 'OPTIONS') return { statusCode: 204, headers: CORS, body: '' };
   // the phone's page: the code it is for stays in the address, read on the phone
   if (method === 'GET' && path === '/phone') return { statusCode: 200, headers: PHONE_HEADERS, body: PHONE_PAGE };
-  if (method === 'GET' && path === '/privacy') return { statusCode: 200, headers: PRIVACY_HEADERS, body: privacyPage({ contact: process.env.GUIDE_CONTACT || '', optedOut: process.env.GUIDE_AI_OPT_OUT === 'yes' }) };
+  if (method === 'GET' && path === '/privacy') return { statusCode: 200, headers: PRIVACY_HEADERS, body: privacyPage({ contact: process.env.GUIDE_CONTACT || '', optedOut: process.env.GUIDE_AI_OPT_OUT === 'yes', pictures: byGemini() ? 'gemini' : 'bedrock', clips: !!process.env.GUIDE_ALIVE_BUCKET && process.env.GUIDE_ALIVE !== 'off' }) };
   if (method === 'GET') return { statusCode: 404, headers: PRIVACY_HEADERS, body: NOT_HERE };
   if (method !== 'POST') return reply(405, { error: 'POST only' });
   const key = process.env.GUIDE_KEY;
@@ -194,8 +205,9 @@ async function answer(event, deps, once) {
     world: process.env.GUIDE_WORLD_MODEL || MODELS.world, illustrate: process.env.GUIDE_ILLUSTRATE_MODEL || MODELS.illustrate,
   };
   const effort = ['low', 'medium', 'high'].includes(process.env.GUIDE_EFFORT) ? process.env.GUIDE_EFFORT : 'medium';
-  // a thing's white cut away by Nova Canvas, unless GUIDE_CUTOUT=tv says the TV cuts it itself
-  const cutout = process.env.GUIDE_CUTOUT !== 'tv';
+  // a thing's white cut away by the image model, unless GUIDE_CUTOUT=tv says the TV cuts it
+  // itself; Gemini can't cut a picture out of its white, so with it the TV does
+  const cutout = process.env.GUIDE_CUTOUT !== 'tv' && !byGemini();
   const r = await once.run(path, body, async () => {
     // asked again, what was already made costs nothing: the day's spending is for what is new
     if (spend && PAID.has(path) && await spend.over()) {

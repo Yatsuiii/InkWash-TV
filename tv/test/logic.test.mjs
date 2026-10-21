@@ -1987,6 +1987,11 @@ test('the pictures ledger counts each picture before it is asked for, and refuse
     assert.equal(await again(small), 'picture');
     assert.equal(again.spent(), 0.1);
     await assert.rejects(again(small), /cap is reached/);
+    // another image model, at its own price a picture
+    const gem = ledgered(async () => 'picture', { file: `${dir}/g.json`, cap: 0.3, price: 0.15 });
+    await gem(big); await gem(small);
+    assert.equal(gem.spent(), 0.3);
+    await assert.rejects(gem(small), /cap is reached/);
   } finally { rmSync(dir, { recursive: true, force: true }); }
 });
 

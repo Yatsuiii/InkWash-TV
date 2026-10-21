@@ -8,9 +8,11 @@
 //   node scripts/demo.mjs [--shots] [--real]
 //     --shots: a screenshot of each night, in test-shots/demo-*
 //     --real:  each night made real, as the story server makes it: the Illustrator through Claude
-//              Code (`claude -p`, on the subscription it is signed in with), and Amazon Nova Canvas
-//              with this computer's AWS credentials (NOVA_REGION, or AWS_REGION; us-east-1 if
-//              neither), behind a ledger (.pictures-ledger.json) that refuses any picture past
+//              Code (`claude -p`, on the subscription it is signed in with), and the picture by
+//              Google's Gemini with the key in GEMINI_API_KEY (counted at PICTURE_PRICE, 0.15 if
+//              unset), or without one, by Amazon Nova Canvas with this computer's AWS credentials
+//              (NOVA_REGION, or AWS_REGION; us-east-1 if neither; AWS retired it on 30 September
+//              2026), behind a ledger (.pictures-ledger.json) that refuses any picture past
 //              PICTURES_CAP dollars (4.50 if unset). Only each night's own picture: their world's
 //              place and its things are made by the story server, in the look the person chooses.
 //              PICTURES_STAND_IN=1 tries it with the stand-in picture instead, at no cost; with
@@ -39,15 +41,22 @@ const REAL = process.argv.includes('--real');
 const CAP = Number(process.env.PICTURES_CAP) || 4.5;
 let nova = null, illustrator = null;
 if (REAL) {
-  const { BedrockRuntimeClient, InvokeModelCommand } = createRequire(here('../server/package.json'))('@aws-sdk/client-bedrock-runtime');
-  const canvas = new BedrockRuntimeClient({ region: process.env.NOVA_REGION || process.env.AWS_REGION || 'us-east-1' });
   const { standInPaint } = await import('../server/illustrator.mjs');
-  nova = process.env.PICTURES_STAND_IN ? Object.assign(standInPaint, { spent: () => 0 }) : ledgered(async (body) => {
-    const out = await canvas.send(new InvokeModelCommand({ modelId: 'amazon.nova-canvas-v1:0', contentType: 'application/json', accept: 'application/json', body: JSON.stringify(body) }));
-    const json = JSON.parse(new TextDecoder().decode(out.body));
-    if (json.error) throw new Error(json.error);
-    return json.images && json.images[0];
-  }, { file: here('../.pictures-ledger.json'), cap: CAP });
+  const ledger = { file: here('../.pictures-ledger.json'), cap: CAP };
+  if (process.env.PICTURES_STAND_IN) nova = Object.assign(standInPaint, { spent: () => 0 });
+  else if (process.env.GEMINI_API_KEY) {
+    const { geminiPaint } = await import('../server/gemini.mjs');
+    nova = ledgered(geminiPaint({ key: process.env.GEMINI_API_KEY, log: (m) => console.log(`  ${m}`) }), { ...ledger, price: Number(process.env.PICTURE_PRICE) || 0.15 });
+  } else {
+    const { BedrockRuntimeClient, InvokeModelCommand } = createRequire(here('../server/package.json'))('@aws-sdk/client-bedrock-runtime');
+    const canvas = new BedrockRuntimeClient({ region: process.env.NOVA_REGION || process.env.AWS_REGION || 'us-east-1' });
+    nova = ledgered(async (body) => {
+      const out = await canvas.send(new InvokeModelCommand({ modelId: 'amazon.nova-canvas-v1:0', contentType: 'application/json', accept: 'application/json', body: JSON.stringify(body) }));
+      const json = JSON.parse(new TextDecoder().decode(out.body));
+      if (json.error) throw new Error(json.error);
+      return json.images && json.images[0];
+    }, ledger);
+  }
   illustrator = createClaudeCli({ onCall: (c) => console.log(`  the Illustrator: ${c.family}, ${c.seconds.toFixed(1)} s`) });
   console.log(`making the nights real: $${nova.spent().toFixed(2)} of $${CAP.toFixed(2)} spent so far`);
 }

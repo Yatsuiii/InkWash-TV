@@ -1596,12 +1596,27 @@ function dreamReal(session, told, layers, mood = null) {
   const things = world.recognize({ words: lines.map((l) => l.text) }).filter((x) => x.said).map((x) => x.id);
   // what it is asked with, kept to paint it again in another look (againChosen)
   R.ask = { image: inkForReal(layers), brief: illustrateBrief(world.toJSON(), { title: told.title, lines, things }), young: !!who.young, look: who.young ? 'film' : 'real' };
-  session.real = ai.real({ ...R.ask, seed: realSeed(`${sitter()}:${who.id}`) }).then((r) => {
+  session.real = ai.real({ ...R.ask, seed: realSeed(`${sitter()}:${who.id}`) }).then(toPaper).then((r) => {
     if (!r || !r.image) { if (r && r.blocked) console.log('dream it real: the picture was turned down'); return null; }
     // its versions, the one shown first (`k`)
     if (state.real === R) { R.made = { ...r, look: R.ask.look }; R.takes = [R.made]; R.k = 0; if (R.want) showReal(r); if (state.offer && !state.offer.after) showOffer(); }
     return r;
   }).catch((err) => { console.log(`dream it real: ${err.message}`); return null; });
+}
+// A picture made real, at the paper's own shape, as everything that crops it takes it: an image
+// model that paints only in shapes of its own (Gemini's nearest to 16:10 is 3:2) is fitted back
+async function toPaper(r) {
+  if (!r || !r.image) return r;
+  try {
+    const im = new Image();
+    im.src = r.image;
+    await im.decode();
+    if (Math.abs((im.naturalWidth * UNITS.H) / (im.naturalHeight * UNITS.W) - 1) < 0.01) return r;
+    const c = document.createElement('canvas');
+    c.width = 1280; c.height = 800;
+    c.getContext('2d').drawImage(im, 0, 0, c.width, c.height);
+    return { ...r, image: c.toDataURL('image/jpeg', 0.92) };
+  } catch (err) { console.log(`dream it real, fitted to the paper: ${err.message}`); return r; }
 }
 // The story is told: the picture, if it is made; meanwhile, or if none is to be made, the painting
 // wakes up at night, its own ink lit (night.js); a picture made later blooms over that.
@@ -3208,7 +3223,7 @@ function againChosen(o) {
   R.again = true;
   showOffer(); sound.dip(true);
   if (readsAloud()) aloud.say(`Painting it again, ${LOOK_NAMES[look] || ''}.`);
-  ai.real({ ...R.ask, look, seed: realSeed(`again:${who.id}:${night}:${R.takes.length}`) }).then((r) => {
+  ai.real({ ...R.ask, look, seed: realSeed(`again:${who.id}:${night}:${R.takes.length}`) }).then(toPaper).then((r) => {
     R.again = false;
     if (!r || !r.image) {
       if (state.offer === o) showOffer();

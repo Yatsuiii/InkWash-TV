@@ -2,7 +2,8 @@
 
 What got in our way while building Inkwash, a Vega OS app where the remote is an ink brush, a
 phone lends a microphone, a storyteller on Amazon Bedrock tells each drawing back as a story in
-Amazon Polly's voice, Amazon Nova Canvas makes a drawing real and Amazon Nova Reel sets it moving.
+Amazon Polly's voice, and an image model makes a drawing real: Amazon Nova Canvas, until AWS
+retired it (entry 15), and now Google's Gemini.
 Each entry says what we were doing, what happened, how we got past it, and what would have
 helped. Everything here we hit ourselves; where something is not yet verified on hardware or
 against Bedrock, it says so.
@@ -200,9 +201,31 @@ against Bedrock, it says so.
 - **Would have helped:** one Bedrock action to deny everything that costs, or a line about it in
   Reel's documentation.
 
+### 15. The image and video models we built on were retired, and Claude needed a form first
+
+- **Doing:** turning the story server on for real in a new AWS account, two days before the deadline.
+- **What happened:** Amazon Nova Canvas, which made every picture (a drawing made real, a place, each
+  thing, a panorama, its cut-out), and Nova Reel, which set a picture moving, reached end of life on
+  30 September 2026. We had built on them without checking Bedrock's model lifecycle page. The
+  image model nearest in kind on Bedrock, Titan Image Generator v2, had reached its end on 30 June
+  2026. Separately, Claude on Bedrock first needs Anthropic's one-time use-case form, and for our
+  account it answered "not authorized"; a support case is open.
+- **Got past it:**
+  - every picture is still asked for as one request body; a small adapter (`server/gemini.mjs`)
+    reads that body and asks Google's Gemini image models for the same picture, so the TV didn't
+    change, except to fit a 3:2 picture back to its 16:10 paper and to cut things out itself;
+  - the privacy page says, when Gemini is on, that drawings go to Google;
+  - clips are off by default, and the TV never offers them;
+  - the storyteller can run on Claude Code for recording (`npm run cli`) until Bedrock's Claude is
+    on for the account.
+- **Would have helped:** a retirement notice in the console next to a model we were calling, a
+  named successor for each retired model, and the use-case form's answer saying why.
+- **Not yet verified:** Gemini is tested against a stand-in of its API, not yet called for real.
+
 ## What we would ask for first
 
 1. A key-event table for the Vega WebView (entries 3, 4 and 5).
 2. A way to run and see a Vega app without KVM, and a WebView app on any platform the SDK supports (entries 1 and 1a).
 3. A Bedrock note for anyone proxying Claude's conversations (entry 8).
 4. Short Nova Reel clips returned inline, or each job's exact key (entry 12).
+5. A successor named for each retired Bedrock model, shown where it is called (entry 15).

@@ -102,7 +102,7 @@ export function callerLimits({ paid = 150, any = 2000, windowMs = 10 * 60 * 1000
 }
 
 // The guide's clients, each call checked against the day's spending first and counted after
-export function metered({ claude, speak = null, paint = null, reel = null, marble = null }, { spend, log = () => {} }) {
+export function metered({ claude, speak = null, paint = null, reel = null, marble = null }, { spend, log = () => {}, picture = PICTURE }) {
   const guard = async () => {
     if (await spend.over()) { log(`the guide has told enough for today: $${spend.perDay} spent`); throw new Spent(); }
   };
@@ -126,9 +126,9 @@ export function metered({ claude, speak = null, paint = null, reel = null, marbl
     }),
     paint: paint && (async (body) => {
       await guard();
-      const picture = await paint(body);
-      await count(PICTURE);
-      return picture;
+      const made = await paint(body);
+      await count(picture);
+      return made;
     }),
     // a clip is counted as it is asked for: it is made, and billed, after this call returns
     reel: reel && {

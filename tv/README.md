@@ -43,8 +43,8 @@ how they drew, asks what only they know, tells it, hears how each line lands, an
 **Worldbuilder** asks about their world between drawings; the **Illustrator** makes each thing
 real; and the **Set Designer** decides where their world stands, from its story, as the story
 starts. No world has a set background. The TV draws the place at once and asks how it should look:
-the Set Designer's three other looks to choose from, or their own words on the phone. Then Amazon
-Nova Canvas paints it, over the TV's own drawing, so the horizon stays where their things stand. The
+the Set Designer's three other looks to choose from, or their own words on the phone. Then an image
+model (Google's Gemini) paints it, over the TV's own drawing, so the horizon stays where their things stand. The
 drawing wakes into that place, Step inside opens in it, and the TV at rest shows each drawing in it.
 
 **Status:**
@@ -63,7 +63,7 @@ drawing wakes into that place, Step inside opens in it, and the TV at rest shows
     walking through their world: where each thing stands in it, the eye's walk, where it stands
     before a thing (looking up to what is in the sky), and what was told of each thing, night by
     night; and each thing made real on its own: the part of the paper painted, its white cut away, how it springs up, and how a thing hops; and the opening, a night drawn as light at an even pace, never naming who tells the story; and the ledger that caps what the demo's pictures may cost; and worlds that meet: a thing visiting one world at a time, sent home, and let go with its world or its painter; nothing frightening sent to a child's world, and a child's storyteller told only what is gentle of it; where a visitor stands; and the storyteller told what is visiting, a line naming it counted as theirs, and the visitor never kept as a thing of the world it visits; never two things of one name in a world; and picture choices, an answer naming the thing of their world it says; and pictures: how they said a thing looks, on its card and in what its picture is made from, and how much of a picture Nova Canvas cut out is left; and walking inside a world built from their picture, a press a step or a turn, never far from where it was taken; and how a long story is held together: told to them as "you" (their words with how the story says them, a line in "I" sent back and then said as "you", what is kept kept as "you"), what happens next carried on from where it stopped and kept after the story so far, the last chapters word for word and older ones as fenced recaps, the other way to say a line heard at once on "not quite" (only a way that holds), and what it remembered kept with the chapter, on its page, and gone with what is forgotten; and what goes wrong: a world that can't be read opening empty with what was kept set aside, never written over; the storyteller's tools only by name; a question for the phone sent again when a poll doesn't get through; and a family kept wrongly holding one painter to an id and to a seal; and all around a picture and painted again: the panorama's sheet, looking across it with ◀ ▶, and the look a picture is painted again in, one not yet tried first;
-  - 80 tests for the story server, among them never paid twice (a request being made waited for, one made answered again for ten minutes and not counted again, only what was made kept, a world asked for twice one world), and among them it comes alive (only a picture the size Nova Reel takes, one six-second shot moving softly through its scene, asked for and looked in on until it is made and looked for only in its own job's folder, counted each day and in the day's spending, and left still when Reel's filter turns it down), walk inside (a quick world asked for from the picture and its scene, private to the guide, looked in on until it is built, the lighter file a TV can draw handed over through the guide, none without a key or past the day's count, priced as it is asked for), all around it (only a sheet and mask the size Nova Canvas widens, the picture kept and its sides painted in its own look, a child's gentle, none past the day's pictures), the Worldbuilder, the Illustrator and the Set Designer (with the looks it offers,
+  - 86 tests for the story server, among them never paid twice (a request being made waited for, one made answered again for ten minutes and not counted again, only what was made kept, a world asked for twice one world), and among them it comes alive (only a picture the size Nova Reel takes, one six-second shot moving softly through its scene, asked for and looked in on until it is made and looked for only in its own job's folder, counted each day and in the day's spending, and left still when Reel's filter turns it down), walk inside (a quick world asked for from the picture and its scene, private to the guide, looked in on until it is built, the lighter file a TV can draw handed over through the guide, none without a key or past the day's count, priced as it is asked for), all around it (only a sheet and mask the size Nova Canvas widens, the picture kept and its sides painted in its own look, a child's gentle, none past the day's pictures), Gemini (each request read as one for Gemini in the same words and shape, the best model a key has found and kept, its key in a header and never in the address, Google's filter said as a refusal, and what it can't do never asked), the Worldbuilder, the Illustrator and the Set Designer (with the looks it offers,
     and what they said of how their world looks), each sent back once when its answer can't be used, what Nova Canvas is asked (for a painting, a place, or one thing alone on white; made again from the picture it had; cut out of its white, or left for the TV to cut when it can't be), their own words for a thing first in every picture of it, a child's picture, the day's
     pictures counted, the day's spending priced and stopped at its limit, each caller's calls
     limited, phone pairings no one came back to let go, errors told without their details, the privacy page and the template held to what the code does, and
@@ -96,14 +96,14 @@ drawing wakes into that place, Step inside opens in it, and the TV at rest shows
     darkens and stirs as the dial is held, the telling is filmed with the part of the painting
     each line is about alive, a card flies in for the night ferry, and the first night opens into
     a world to step inside, their world's own place all round, the night ferry standing up as their
-    own ink on the grass, with its shadow and its name. The first night's picture is chosen to come alive: it is asked for with the picture and its scene, the choice says it is coming while it is made, and the clip (a stand-in) plays over the picture and is kept with the night. Then it is built into a world to walk inside (World Labs standing in), its file kept with the night, and walked through with the remote. Then it is widened into a panorama (Nova Canvas standing in) and looked across with ◀ ▶, kept with the night and seen again for free; and painted again as a painting, shown as *Picture 2 of 2*, and OK goes back to the first. Each night's first telling is made real: the Illustrator is sent their ink and the story as it begins, the
+    own ink on the grass, with its shadow and its name. The first night's picture is chosen to come alive: it is asked for with the picture and its scene, the choice says it is coming while it is made, and the clip (a stand-in) plays over the picture and is kept with the night. Then it is built into a world to walk inside (World Labs standing in), its file kept with the night, and walked through with the remote. Then it is widened into a panorama (a stand-in image model) and looked across with ◀ ▶, kept with the night and seen again for free; and painted again as a painting, shown as *Picture 2 of 2*, and OK goes back to the first. Each night's first telling is made real: the Illustrator is sent their ink and the story as it begins, the
     ink blooms into the picture as it ends, and the picture is kept with the night and becomes the
     ferry's portrait on its card in their world; on the second night the Illustrator is shown the ferry
     and its look is kept, so it looks the same from then on; a child's is asked for as a warm
     animated film, and when the image model's filter turns it down, the child's painting wakes up
     in their world's place instead, from its own ink. Back home with the phone paired again, they
     say on it how the night ferry looks; it is kept on its card and in their world, and the ferry
-    is made again from the picture it had, as they said, and cut out by (stand-in) Nova Canvas;
+    is made again from the picture it had, as they said, and cut out by the (stand-in) image model;
     let go, it is made again as it was. From their world, the Worldbuilder asks where the night ferry goes. Last, the demo family opens,
     labelled, and leaves the TV's own family as it was; Moon is offered last time's story, which
     opens with *Previously in Moon's world* and is heard over that night's painting, and is
@@ -113,9 +113,12 @@ drawing wakes into that place, Step inside opens in it, and the TV at rest shows
     instead, read from there after the TV is turned off and on, and moved back once there is room.
 - **Not yet tried on Bedrock.** The real storyteller and Worldbuilder have told 24 worlds, three of
   them for 22 nights, through Claude Code on a Claude subscription (`npm run cli`), but never
-  through Amazon Bedrock, and Dream it real has never made a real picture, nor Nova Reel a clip:
-  the tests use a stand-in picture and a stand-in clip. Nova Canvas's background removal and image
-  variation are untried too. Walk inside has been run only with a stand-in world: no real World
+  through Amazon Bedrock, and Dream it real has never made a real picture: the tests use a
+  stand-in picture. Pictures were built on Amazon Nova Canvas, and clips on Nova Reel; AWS retired
+  both on 30 September 2026, so pictures now come from Google's Gemini image models
+  (`server/gemini.mjs`, which reads each request in the shape the server already builds for Nova
+  Canvas), tested only against a stand-in of Gemini's API so far; and *Watch it come alive* is off,
+  so the TV never offers it (FRICTION_LOG entry 15). Walk inside has been run only with a stand-in world: no real World
   Labs world has been built from the TV, nor walked on a Fire TV Stick, whose GPU may find it too
   much (the TV draws it at the screen's full size, dropping to two thirds if it can't keep up, and takes a world of at most 150,000
   points). That costs money, and waits for your go-ahead. Without it, each told painting
@@ -124,12 +127,13 @@ drawing wakes into that place, Step inside opens in it, and the TV at rest shows
   sticks. **It has not yet run on either.** The simulator needs hardware acceleration (KVM) to
   boot, and the cloud machine this was built on has none; and it runs a WebView app only on an
   Apple Silicon Mac (not on Ubuntu, an Intel Mac or Windows), so that is where to try it.
-- **The story server** (`server/`) is written and tested against stand-ins. **It isn't deployed
-  yet**; that needs an AWS account. Why there is a server at all: Claude runs in Amazon Bedrock,
+- **The story server** (`server/`) is written and tested against stand-ins. **It has been deployed
+  once, in part**: its voice (Polly) and its privacy page answer; the storyteller waits on AWS
+  turning on Anthropic's models for the account, and pictures on a Gemini key. Why there is a server at all: Claude runs in Amazon Bedrock,
   and calling it takes AWS credentials, which can't go inside a TV app (anyone could pull them
   out). So a small Lambda function in your AWS account holds them: the TV sends it each turn of
   the storyteller's, and it passes it to Claude and back. It also makes the voice (Amazon Polly),
-  makes paintings real (Amazon Nova Canvas, at most `RealPicturesPerDay` a day) and pairs a
+  makes paintings real (Google's Gemini, at most `RealPicturesPerDay` a day) and pairs a
   phone. It keeps no paintings or stories. Without it, the TV still paints, keeps each world and
   tells your line plainly, but there's no Claude.
 - **What got in our way** building for Vega OS and Bedrock is in
@@ -172,7 +176,7 @@ like a toy world in an animated game, a drowned city is a still lake at first li
 it at once, and back home asks *How should your world look?*, with three other looks to choose
 from (*A misty ink landscape*, *A bright toy world, chunky and rounded*, *A golden evening in
 oils*), *Keep it as it is*, or their own words said on the phone. A look chosen has the place
-written again in it; then Nova Canvas paints it. *How it looks*, at home, asks again any time. It
+written again in it; then the image model paints it. *How it looks*, at home, asks again any time. It
 is the same place everywhere their world is shown: home, the walk, the painting woken, Step inside,
 the sky round the paper while a story is told, and the TV at rest.
 
@@ -216,8 +220,8 @@ place.
 
 **Dream it real.** Ink is how you paint a world, not how you see it. So as a night's first
 telling begins, the Illustrator (Claude Haiku 4.5, which sees the painting) reads the story and
-what is true of the things in it, and writes the scene; an image model, Amazon Nova Canvas, paints
-it over their strokes, holding loosely to the edges of their ink, so a rough drawing becomes the real thing they meant, not a traced scribble, and what they painted stays where they
+what is true of the things in it, and writes the scene; an image model, Google's Gemini (Gemini 3
+Pro Image), paints it over their strokes, told to keep the layout of their ink, so a rough drawing becomes the real thing they meant, not a traced scribble, and what they painted stays where they
 put it: the long stroke a pier, the ferry waiting at its end, at dusk. When the story ends,
 the ink blooms into it, from where they painted most. It is kept with the night, and from then on
 it is how their world looks: on its cards, in *Previously in…*, on the TV at rest. How
@@ -373,12 +377,13 @@ A world, told and kept, shouldn't look like a form. What's on the screen:
   points (Gaussian splats), which a TV can draw, comes through the story server and is kept with
   the night, so walking it again, after last time's story too, costs nothing. three.js and Spark
   draw it: they are packed into the app as text and read only once someone walks inside. World
-  Labs is the one service here that isn't Amazon's: nothing on AWS builds a world to walk through
+  Labs and Gemini are the two services here that aren't Amazon's: nothing on AWS builds a world to walk through
   from a picture.
 - **See all around it, and paint it again.** Once a story's picture is made real, *See all
   around it* widens it to either side into a panorama: the TV sets the picture in the middle of a
   2560 × 800 sheet (its sides its own edges mirrored, for the model to start from) with a mask of
-  what to paint, and Nova Canvas paints the rest of the place in the same look (`OUTPAINTING`).
+  what to paint, and Gemini paints the rest of the place in the same look, as wide as it paints
+  (21:9; the request is built as Nova Canvas's `OUTPAINTING`, and `server/gemini.mjs` reads it).
   They look across it with ◀ ▶, and let go it drifts on slowly by itself; Back is the picture
   again. It is kept with the night, so seeing it again costs nothing. *Paint it again* makes the
   same ink real in another look, one not yet tried first: a grown-up's as a painting, a picture
@@ -512,17 +517,17 @@ tuning by eye: `/dev/lab.html?scene=samples` (or `bamboo`, `one`, `drop`).
   happen while they mark how it felt, so once they finish there is a turn less to wait for (below,
   *A head start*).
 
-| Job | Model on Amazon Bedrock |
+| Job | Model |
 | --- | --- |
 | The storyteller: looking, asking, telling, remembering | Claude Opus 5.5 (`anthropic.claude-opus-5-5`), at medium effort (the template's `Effort`: low, medium or high) |
 | Remarks as you paint, which have to be quick | Claude Haiku 4.5 (`anthropic.claude-haiku-4-5`) |
 | The Worldbuilder: one question about their world, with answers | Claude Haiku 4.5 |
 | The Illustrator: seeing the painting, the scene it is made real from, how each thing looks | Claude Haiku 4.5 |
-| Painting it real, over their ink | Amazon Nova Canvas (`amazon.nova-canvas-v1:0`), held loosely to the ink's edges (`CANNY_EDGE` at 0.45), 1280 × 800; painted again the same way in another look when they choose *Paint it again* |
-| Widening the picture into a panorama, when they choose to see all around it | Amazon Nova Canvas, `OUTPAINTING`: the picture kept in the middle of a 2560 × 800 sheet and its sides painted |
-| Setting the picture moving, when they choose to watch it come alive | Amazon Nova Reel (`amazon.nova-reel-v1:0`): one six-second shot from the picture, 1280 × 720, made as an async job into S3 |
+| Painting it real, over their ink | Google Gemini 3 Pro Image (`gemini-3-pro-image-preview`, then the next in `server/gemini.mjs` this key has), sent their ink and told to keep its layout, at 3:2 (the TV fits it back to the paper's 16:10); painted again the same way in another look when they choose *Paint it again* |
+| Widening the picture into a panorama, when they choose to see all around it | Gemini, sent the picture in the middle of a 2560 × 800 sheet with its sides mirrored, and painted at 21:9 |
+| Setting the picture moving, when they choose to watch it come alive | Off: it was Amazon Nova Reel (`amazon.nova-reel-v1:0`), which AWS retired on 30 September 2026. The code stays (`server/reel.mjs`), and `AliveClips=on` turns it on for an account that still has it |
 | Building the picture into a world to walk through, when they choose to walk inside | World Labs Marble (`marble-1.0-draft`), from the picture and its scene; the TV draws its lighter file (about 100,000 soft points) with three.js and Spark |
-| Each thing made real on its own, from its strokes | Amazon Nova Canvas, held to its strokes' edges (`CANNY_EDGE`), up to 640 a side, alone on white; made again from the picture it had (`IMAGE_VARIATION`); cut out of its white (`BACKGROUND_REMOVAL`) |
+| Each thing made real on its own, from its strokes | Gemini, from its strokes, up to 640 a side, alone on white; made again from the picture it had; cut out of its white by the TV (Gemini can't remove a background) |
 
 **Four agents, each held to their world in code.** Not every tool is an agent: the brush, the
 ink, the map and the checks are code, and only where judgement is wanted is a model asked.
@@ -533,8 +538,8 @@ ink, the map and the checks are code, and only where judgement is wanted is a mo
   child frightens no one, and sends it back once with why.
 - **The Illustrator** (`server/illustrator.mjs`, `engine/dreams/illustrate.mjs`) answers with a
   scene and how each thing looks; code checks the scene is one to paint from and, for a child,
-  brings in nothing frightening, and that a thing's look, once kept, stays as it is. Then Nova
-  Canvas paints it, its own filter on top: a picture it turns down leaves the ink as it is.
+  brings in nothing frightening, and that a thing's look, once kept, stays as it is. Then Gemini
+  paints it, its own filter on top: a picture it turns down leaves the ink as it is.
 - **The Set Designer** (`server/scenery.mjs`, `engine/dreams/scene.mjs`) reads a world's story as
   it starts (on its first chapter, as the first telling begins, with that telling in it), what they
   said as they painted, and their own words about how it looks if they gave them, and writes
@@ -544,8 +549,8 @@ ink, the map and the checks are code, and only where judgement is wanted is a mo
   it can't be. The TV draws it at once (`src/scene.js`; their things as their own ink, with
   shadows, or as light where it is dark) and, back home, asks how it should look: the three other
   looks, *Keep it as it is*, or their own words on the phone; a look chosen has the place written
-  again in it. Then it sends that drawing to be painted: Nova Canvas
-  paints the place in its look, held to the drawing's edges (`CANNY_EDGE`, 1536 × 864) so the
+  again in it. Then it sends that drawing to be painted: Gemini
+  paints the place in its look, keeping the drawing's layout (16:9, as the drawing is) so the
   horizon stays where their things stand, and the TV lays it over the drawing, its edges brought
   round to meet for the walk. Both are kept with the world. One picture per world, counted with
   the day's pictures; without one (no story server, none left today, or turned down), the drawing
@@ -554,12 +559,11 @@ ink, the map and the checks are code, and only where judgement is wanted is a mo
   up in a painted place look like what they are, strokes: a lighthouse is a few black lines with a
   shadow. So, back home, each thing of their world is painted on its own: its strokes alone, in
   black on white, over the part of the paper it is in (its box with a margin, at most 640 pixels
-  a side, no thinner than 4 to 1), are the condition image; Nova Canvas is asked for that one
+  a side, no thinner than 4 to 1), are what it is painted from; Gemini is asked for that one
   thing, as the Illustrator said it looks, in the look of their world's place, whole and alone on
-  plain white (`NOT_THING` keeps out ground, sky and other things), and holds to its strokes'
-  edges, so it keeps the shape and size they gave it. Nova Canvas then removes its background
-  (`BACKGROUND_REMOVAL`); if it can't, or with `ThingCutout=tv`, the TV cuts the white away
-  itself, from the edge of the picture inwards (a white window inside it stays), easing its fringe
+  plain white (`NOT_THING` keeps out ground, sky and other things), and keeps to its strokes'
+  layout, so it keeps the shape and size they gave it. Gemini can't remove a background, so the TV
+  cuts the white away itself (with Nova Canvas, the server had it removed, `BACKGROUND_REMOVAL`), from the edge of the picture inwards (a white window inside it stays), easing its fringe
   into the clear. It is kept among their paintings with what it was made from, so it is made again
   only when that changes: its strokes, its look, how they said it looks, or how their world looks;
   and made again, it is painted from the picture it had (`IMAGE_VARIATION`), so it is still the
@@ -862,7 +866,7 @@ node scripts/motion-sheet.mjs   # how things move, frame by frame: contact sheet
 
 cd server
 npm install
-npm test            # 80 tests, with stand-ins for Claude, Nova Canvas, Nova Reel, World Labs, Polly and DynamoDB
+npm test            # 86 tests, with stand-ins for Claude, Gemini, Nova Canvas, Nova Reel, World Labs, Polly and DynamoDB
 npm run stand-in    # a scripted storyteller on http://localhost:5188 that calls the tools like the real one
 npm run dev         # the real storyteller, with your AWS credentials
 npm run cli         # the real storyteller through Claude Code (claude -p), on the Claude subscription
@@ -894,12 +898,13 @@ The browser test uses the Playwright that's installed globally (`npm root -g`) a
 
 You need an AWS account and the AWS SAM CLI.
 
-1. Pick the region: **us-east-1 (N. Virginia)** has Claude and Amazon Nova Canvas both. Bedrock's
-   models are on for every account there (AWS retired its "Model access" page in October 2025);
-   the one step left is Anthropic's one-time use-case form, filled in once in the Bedrock console
-   (open the chat playground, choose a Claude model, and it asks). Nova Canvas isn't offered in
-   every region: deploying elsewhere, set `RealRegion` to one where it is, or `RealPictures=off`
-   to keep the ink.
+1. Pick the region: **us-east-1 (N. Virginia)** has Claude. Bedrock's models are on for every
+   account there (AWS retired its "Model access" page in October 2025); the one step left is
+   Anthropic's one-time use-case form, filled in once in the Bedrock console (open the chat
+   playground, choose a Claude model, and it asks). For pictures, get a Gemini API key from Google
+   AI Studio (aistudio.google.com) on a Google Cloud project with billing on (Gemini 3 Pro Image
+   has no free tier), and give it as `GeminiKey`; without one, set `RealPictures=off` to keep the
+   ink. Drawings are then sent to Google to be painted, and the privacy page says so.
 2. Deploy:
 
    ```sh
@@ -909,7 +914,11 @@ You need an AWS account and the AWS SAM CLI.
    ```
 
    It asks for a `GuideKey` (at least 16 characters: make it long and random), an `AlertEmail`,
-   and how much it may spend (`SpendPerDay`, `MonthlyBudget`). `sam deploy --guided` saves your
+   how much it may spend (`SpendPerDay`, `MonthlyBudget`), and the `GeminiKey` (type it there,
+   never into a chat; it is kept in the function's settings, which anyone who can open the function
+   in the console can read). `PicturePrice` (15 cents) is what each picture is counted at in
+   `SpendPerDay`, so the day's cap holds Gemini's pictures too; but the AWS budget's action can't
+   stop a Google bill, so set a budget on the Google Cloud project as well. `sam deploy --guided` saves your
    answers in `server/samconfig.toml`, which git ignores: it can hold the key.
 
    The template is `server/template.yaml`: one Lambda function behind a function URL, and one
@@ -917,8 +926,9 @@ You need an AWS account and the AWS SAM CLI.
    time to live on `expires`). It may call `bedrock-mantle:CreateInference`, `bedrock:InvokeModel`
    on the image model alone, `polly:SynthesizeSpeech`, and read and write that table. Each call may take up to 120 seconds, since one turn of the storyteller can think for a
    minute; the `Effort` parameter sets how hard it thinks. Its log is kept 14 days.
-   **It comes alive** (Amazon Nova Reel, about 50 cents a clip, at most `AliveClipsPerDay`, 6 by
-   default) is made only by a stack in us-east-1, where Nova Reel is: Reel writes each clip to a
+   **It comes alive** is off (`AliveClips=off`): AWS retired Amazon Nova Reel on 30 September
+   2026. For an account that still has it (about 50 cents a clip, at most `AliveClipsPerDay`, 6 by
+   default), `AliveClips=on` makes clips in a stack in us-east-1, where Nova Reel is: Reel writes each clip to a
    private bucket the template makes (`Clips`, each clip deleted a day after it is made), the guide
    may `bedrock:StartAsyncInvoke` and `bedrock:GetAsyncInvoke` and read and write that bucket, and
    the TV fetches its clip by a link good for ten minutes. `AliveClips=off`, or any other region,
@@ -1002,30 +1012,30 @@ its stories itself. So:
   a turn even when they go back to the paper to paint on instead: about one part in six of a night,
   each time. How long people actually
   wait is not measured yet.
-- **Dream it real, per painting:** one picture from Nova Canvas, standard quality at 1280 × 800:
-  from 4 to 6 cents at its listed prices, depending on which of its sizes that counts as (check
-  your region's), and a call to Haiku for the Illustrator, under a cent. One a night, never for a
+- **Dream it real, per painting:** one picture from Gemini 3 Pro Image, about 13.4 cents at
+  Google's listed price for a 1K or 2K picture, plus about a tenth of a cent for the drawing it is
+  sent (check Google's current prices; it is counted at `PicturePrice`, 15 cents), and a call to
+  Haiku for the Illustrator, under a cent. One a night, never for a
   line told again. `RealPicturesPerDay` (60 by default) is the most it makes in a day, for every
   TV the guide serves together, counted in the DynamoDB table; past it, or with
   `RealPictures=off`, the TV keeps the ink.
 - **Walk inside, when they choose it:** one quick World Labs world, 12 to 20 cents (the Dream
   Canvas's one live world cost 230 credits), counted in `SpendPerDay` at 20 cents; walking it
   again costs nothing.
-- **See all around it, when they choose it:** one Nova Canvas picture at 2560 × 800, counted with
-  `RealPicturesPerDay` and in `SpendPerDay` at its dearer size (8.8 cents); seeing it again costs
+- **See all around it, when they choose it:** one Gemini picture at 21:9, counted with
+  `RealPicturesPerDay` and in `SpendPerDay` at `PicturePrice`; seeing it again costs
   nothing. **Paint it again** is one more picture made real each time, counted the same way.
 - **Where a world stands, once per world:** a call to Haiku for the Set Designer, under a cent
   (one more each time they change how it looks), and one picture of the place (1536 × 864,
-  counted with `RealPicturesPerDay`), 4 to 8 cents.
-- **Each thing made real, once:** two pictures per thing, painted and then cut out of its white
-  by Nova Canvas (at most 640 × 640, standard quality, both counted with `RealPicturesPerDay`, of
-  which things take three quarters at most, so a painting made real and its place always have
-  some left), 8 to 16 cents if a background removal is priced as a picture (check your region's
-  prices); with `ThingCutout=tv`, one, and the TV cuts it out. Twelve things at most a visit to
+  counted with `RealPicturesPerDay`), about 13.4 cents.
+- **Each thing made real, once:** one picture per thing, painted by Gemini and cut out of its
+  white by the TV (at most 640 × 640, counted with `RealPicturesPerDay`, of which things take
+  three quarters at most, so a painting made real and its place always have some left), about
+  13.4 cents. Twelve things at most a visit to
   their world; made again only when its look, their words for it or their world's look changes,
   and one turned down or that can't be cut out is not asked for again until then. A first chapter
-  with three new things is about eight pictures in all (the painting, the place, the things), 30
-  to 65 cents.
+  with three new things is about five pictures in all (the painting, the place, the things),
+  about 70 cents.
 - **Besides:** short calls to Haiku for the remarks as you paint, and the Worldbuilder's question
   when they ask *What's out there?*
 - **DynamoDB:** a few writes per telling, and a few per thing said on the phone.
@@ -1082,7 +1092,7 @@ npm run build:release   # build/<arch>-release/inkwashtv_<arch>.vpkg
 | `src/cards.js` | Their world as cards (each thing, its picture's strokes, the nights it came, how it felt, what is true of it) and as a map (where each first came, pushed apart, joined to what came with it). Pure |
 | `src/quality.js` | Keeps the ink smooth on a slow TV: while the ink is wet, frames that run long for a moment ask the paper for fewer wet steps a second, judged against how quick a dry frame is on this TV, and quick frames give them back |
 | `docs/architecture.html`, `.png` | How it fits together, for the submission |
-| `src/demo-family.js`, `scripts/demo.mjs`, `scripts/ledger.mjs` | The demo family, and the script that paints its earlier nights in the page, each drawing steered with the remote along the shape it is of, and writes down what the TV kept; with `--real`, each night made real (the Illustrator on Claude Code, Nova Canvas on your AWS account), behind a ledger that refuses any picture past a cap |
+| `src/demo-family.js`, `scripts/demo.mjs`, `scripts/ledger.mjs` | The demo family, and the script that paints its earlier nights in the page, each drawing steered with the remote along the shape it is of, and writes down what the TV kept; with `--real`, each night made real (the Illustrator on Claude Code, the picture by Gemini with your key in `GEMINI_API_KEY`), behind a ledger that refuses any picture past a cap |
 | `scripts/gallery.mjs`, `docs/gallery/` | The Devpost gallery: the TV page driven through the demo family with the real storyteller and Set Designer (through Claude Code), each screen kept as it is with its caption under it, 3:2, and the thumbnail |
 | `scripts/listing.mjs`, `docs/listing/` | The Appstore listing's pictures in the app's own look: the 512 x 512 icon a Live App Test asks for, the small icon, and Fire TV's app icon and background |
 | `src/intro.js` | The opening, on a TV that has never had Inkwash open: the demo child's first drawing drawn as light, stroke by stroke, told back a line at a time, and woken up as their world, chapter after chapter, in about twenty seconds. Any button skips it |
@@ -1095,7 +1105,7 @@ npm run build:release   # build/<arch>-release/inkwashtv_<arch>.vpkg
 | `src/journal.js` | What goes in a painter's book: who and what keeps coming back, how it felt each night, what they painted next, and each story heard again. Pure |
 | `src/aloud.js` | The screen read aloud for a child: each phrase fetched once from the storyteller's voice and kept, cut off when they move on; the browser's voice without the service |
 | `src/visits.js` | Worlds that meet: a thing of one painter's world visiting another's, sent by its painter and sent home by either; read from its own world each time, so nothing is copied; nothing frightening to a child's world; where a visitor stands. Pure |
-| `server/wide.mjs`, `src/wide.js` | All around it and painted again: Nova Canvas's outpainting request from the picture set in its wider sheet and the mask, checked to the sizes it takes; on the TV, the sheet's layout, the look a picture is painted again in, and looking across a panorama |
+| `server/wide.mjs`, `src/wide.js` | All around it and painted again: the outpainting request (in Nova Canvas's shape) from the picture set in its wider sheet and the mask, checked to the sizes it takes; on the TV, the sheet's layout, the look a picture is painted again in, and looking across a panorama |
 | `server/reel.mjs`, `server/standin-clip.webm` | It comes alive: Nova Reel's request from a picture made real and its scene, the job asked for and looked in on, a child's kept gentle; and a stand-in that hands back a few seconds of moving light |
 | `src/family.js` | Who paints on this TV: each painter's seal, whether the storyteller is talking to a child, and where their world and paintings are kept |
 | `src/world.js` | Their dream world, kept on the TV: loading and keeping it so no night is lost (localStorage, IndexedDB when short of room, a word for the grown-ups), tonight's slice, the welcome back, what a night kept |
@@ -1104,7 +1114,8 @@ npm run build:release   # build/<arch>-release/inkwashtv_<arch>.vpkg
 | `src/engine/`, `server/engine/` | The Inkwash engine (its core, the personal layer, dream worlds), copied from `../engine` by `scripts/sync-personal.mjs` (a test fails if a copy drifts). The TV page runs it too |
 | `server/commons-store.mjs` | The commons, in memory or in DynamoDB |
 | `server/worldbuilder.mjs` | The Worldbuilder: its prompt, what the TV sends it, its answer held to their world and sent back once if not; and a stand-in |
-| `server/illustrator.mjs` | The Illustrator: its prompt (it sees the painting), the scene held to their world, Nova Canvas's request over their ink, its filter; and stand-ins for both |
+| `server/illustrator.mjs` | The Illustrator: its prompt (it sees the painting), the scene held to their world, the image model's request over their ink (in Nova Canvas's shape), its filter; and stand-ins for both |
+| `server/gemini.mjs` | Pictures from Google's Gemini: each request the server builds read as one for Gemini (what to say, the pictures it is sent, its shape), the best image model the key has, and its answer read, a refusal said as one |
 | `server/budget.mjs` | The day's pictures and clips, each counted in memory or in DynamoDB, so no more are made than were set |
 | `index.html` | The 1920 × 1080 stage, with every word inside the TV's safe area |
 | `fonts/` | Alegreya and Alegreya Sans, bundled: the page fetches nothing from outside itself |
@@ -1115,11 +1126,11 @@ npm run build:release   # build/<arch>-release/inkwashtv_<arch>.vpkg
 | `server/agent-standin.mjs` | A script standing in for Claude as the storyteller, for the tests and the dev server: it calls every tool the way the storyteller would |
 | `server/guide.mjs` | The story server's core: its routes, the remarks, and the pipeline the agent replaced (`/tell`, `/readings`), kept as the fallback |
 | `server/phone.mjs` | Pairings with a phone (in memory, or in DynamoDB), and the page the phone opens |
-| `server/lambda.mjs` | The storyteller on AWS Lambda: Claude and Nova Canvas on Amazon Bedrock, Amazon Polly; each caller's calls limited, the day's spending checked first, and nothing but "it went wrong" told to a caller when it does |
+| `server/lambda.mjs` | The storyteller on AWS Lambda: Claude on Amazon Bedrock, pictures by Gemini (or a Nova Canvas-shaped model on Bedrock, without a key), Amazon Polly; each caller's calls limited, the day's spending checked first, and nothing but "it went wrong" told to a caller when it does |
 | `server/limits.mjs` | What the guide may spend in a day (every call priced from its usage and counted, in memory or in DynamoDB) and how often one caller may call |
 | `server/once.mjs` | The same paid request is never paid twice: one being made is waited for, one made is answered again for ten minutes |
 | `server/privacy.mjs` | The privacy notice and terms, served at `/privacy` |
-| `server/scenery.mjs` | The Set Designer: where a world stands, written from its story (`/scene`), and the place painted from it by Nova Canvas over the TV's drawing (`/backdrop`) |
+| `server/scenery.mjs` | The Set Designer: where a world stands, written from its story (`/scene`), and the place painted from it by the image model over the TV's drawing (`/backdrop`) |
 | `src/scene.js` | A world's place drawn from its scene, going on round for the walk; and how their things stand in it (`materialOf`) |
 | `server/dev.mjs` | The storyteller on this computer, real or a stand-in |
 | `server/claude-cli.mjs` | The Messages API answered by Claude Code (`claude -p`) on the Claude subscription it is signed in with: the guide's own prompts, tools and checks, unchanged; for running the storyteller without AWS |
@@ -1183,9 +1194,9 @@ From Amazon's Vega docs, checked 2026-10-05:
    India.
 8. **A painting that is told more than once** is one night in their world, kept the first time:
    later tellings of it aren't kept. Amending a night is next.
-9. **See Dream it real for real.** Make the six demo nights real (about 40 cents), look at what
-   Nova Canvas does with loose ink, and tune how closely it holds to the strokes
-   (`REAL.strength`) and the words.
+9. **See Dream it real for real.** Make the six demo nights real (about 90 cents), look at what
+   Gemini does with loose ink, and tune how closely it holds to the strokes and the words
+   (`server/gemini.mjs`).
 10. **Travel their world:** go to a thing in their world and hear the stories it came in.
 
 ## Fonts

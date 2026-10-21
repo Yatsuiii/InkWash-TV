@@ -4,7 +4,7 @@
 story, it wakes up in a place made from that story, and your world grows a piece at a time.
 
 Our entry to the Amazon Developer Hackathon 2026, Fire TV track: a Vega OS app, with a story server
-on AWS (Amazon Bedrock, Amazon Nova Canvas and Nova Reel, Amazon Polly, AWS Lambda, DynamoDB, S3).
+on AWS (Amazon Bedrock, Amazon Polly, AWS Lambda, DynamoDB) and pictures from Google's Gemini.
 
 ![Star's world on the TV: everything drawn in it standing where it first came](tv/docs/gallery/02-their-world.jpg)
 
@@ -17,9 +17,10 @@ on AWS (Amazon Bedrock, Amazon Nova Canvas and Nova Reel, Amazon Polly, AWS Lamb
   line at a time, read aloud by Amazon Polly. ▲ keeps a line; ▼ says "not quite" and hears it
   another way at once.
 - **It wakes up in its place.** The Set Designer writes where your world stands from its story, and
-  Amazon Nova Canvas paints it, and each thing in it, held to the shapes you drew.
-- **Then more, when you want it.** *Watch it come alive* (Amazon Nova Reel, six seconds); *See all
-  around it*, a panorama to look across; *Paint it again* in another look; *Walk inside*, a 3D
+  an image model (Gemini 3 Pro Image) paints it, and each thing in it, held to the shapes you
+  drew. We built the pictures on Amazon Nova Canvas, which AWS retired on 30 September 2026, so the
+  server now asks Gemini for the same pictures.
+- **Then more, when you want it.** *See all around it*, a panorama to look across; *Paint it again* in another look; *Walk inside*, a 3D
   world built from the picture (World Labs); *Step inside*, the drawing opening like a pop-up book.
 - **It remembers.** Come back another day and it opens like a series: *Previously in Star's
   world*. Draw the rocket again and it asks whether it's the same rocket, with Tuesday's drawing
@@ -75,7 +76,9 @@ single file, opened from `file://` as the Vega app loads it.
 
 - **No paid call has been made from the TV.** The real storyteller and Worldbuilder have told 24
   worlds through Claude Code on a Claude subscription, but never through Amazon Bedrock, and no
-  real picture, clip, panorama or World Labs world has been made: the tests use stand-ins.
+  real picture, panorama or World Labs world has been made: the tests use stand-ins, Gemini's
+  API among them. *Watch it come alive* (six seconds of Amazon Nova Reel) is off: AWS retired
+  Nova Reel too.
 - **The Vega app has not run on a device.** It builds for the Vega Virtual Device and for Fire TV
   sticks, but our build machine had no hardware acceleration (KVM), and the simulator runs a
   WebView app only on an Apple Silicon Mac, so everything was tested in Chromium at 1920 × 1080

@@ -119,6 +119,10 @@ test('metered: each call checked against the day first and counted after; once t
   assert.match(lost[0], /spending not counted: table gone/);
   // no voice or pictures set up: none metered
   assert.equal(metered({ claude, speak: null, paint: null }, { spend }).paint, null);
+  // pictures from elsewhere, at their own price
+  const dear = memorySpend({ perDay: 1 });
+  await metered({ claude, paint: async () => 'iVBOR' }, { spend: dear, picture: 0.15 }).paint({});
+  near(await dear.today(), 0.15, 'a picture at the price it was given', MICRO);
 });
 
 test('the day spent mid-telling: the agent doesn’t fall back to the fast model, and the TV hears 429', async () => {
@@ -228,6 +232,14 @@ test('the privacy page says what the code does', () => {
     /Write to whoever gave you the app/,
   ]) assert.match(p, said);
   assert.match(privacyPage({ optedOut: true }), /has opted out of AWS using that text to improve Polly/);
+  // pictures from Google's Gemini: said so, and Nova Canvas named nowhere
+  const g = privacyPage({ pictures: 'gemini', clips: false });
+  assert.match(g, /Google’s Gemini API|Google's Gemini API/);
+  assert.match(g, /Amazon Bedrock/);
+  assert.doesNotMatch(g, /Nova Canvas|Nova Reel/);
+  assert.match(g, /the brush\s+strokes you painted it\s+with, in black on white/);
+  assert.doesNotMatch(privacyPage({ clips: false }), /A clip, for a day|Nova Reel/, 'no clips made, none said');
+  assert.match(privacyPage(), /A clip, for a day/);
 });
 
 test('the template holds to the code: alarms on the lines the guide logs, its log kept as long as the privacy page says', async () => {

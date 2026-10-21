@@ -35,7 +35,7 @@ check against what's theirs, telling, remembering) at no cost. So is the stand-i
 The stand-in Set Designer always writes the same bright meadow, and the stand-in makes no
 pictures, so each told drawing wakes up in that meadow as the TV draws it, as it does on any TV
 without the image model; on the real server, the Set Designer writes each world's own place, and
-Amazon Nova Canvas paints it and can make each drawing real. Without the server's voice, reading
+Google's Gemini paints it and can make each drawing real. Without the server's voice, reading
 aloud uses the browser's own voice, if it has one.
 
 **What to try:**
@@ -88,6 +88,5 @@ aloud uses the browser's own voice, if it has one.
    Moon's world*, with *Send the night ferry home* (Star can't change or forget it: it's Moon's).
    Draw something there, and Star's storyteller is told it is visiting and may bring it into the
    story; it stays Moon's, and isn't kept in Star's world. On the real server, the picture a
-   chapter was made into can also come alive (*Watch it come alive*, Amazon Nova Reel), be seen
-   all around (*See all around it*) and be painted again in another look (*Paint it again*); the
-   stand-in makes no pictures, so none of these is offered there.
+   chapter was made into can also be seen all around (*See all around it*) and be painted again
+   in another look (*Paint it again*); the stand-in makes no pictures, so neither is offered there.
