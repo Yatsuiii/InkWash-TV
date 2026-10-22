@@ -76,10 +76,17 @@ const byGemini = () => process.env.GUIDE_REAL !== 'off' && !!process.env.GUIDE_G
 const byAnthropic = () => !!process.env.GUIDE_ANTHROPIC_KEY;
 // a model as Anthropic's API names it: Bedrock's ID without its `anthropic.` (or region) prefix
 export const bareModel = (m) => String(m || '').replace(/^(?:(?:global|us|eu|apac|jp|au)\.)?anthropic\./, '');
-// a Messages API client that is given Bedrock's model IDs and asks with Anthropic's
-export const withBareModels = (client) => ({
-  messages: { create: (params, opts) => client.messages.create({ ...params, model: bareModel(params && params.model) }, opts) },
+// How long one call to Claude may take, and whether it is made again, so the guide answers within
+// the function's 120 s (the SDK alone would wait ten minutes and try twice more). The most capable
+// model is asked once: if it fails, the fast one stands in for it (guide.mjs) in the time left.
+// The fast one answers in seconds, so it gets a second go.
+export const callLimits = (model) => (/opus/.test(String(model || '')) ? { timeout: 80_000, maxRetries: 0 } : { timeout: 20_000, maxRetries: 1 });
+// a Messages API client that asks within those limits, by `name` for the model (as it was given)
+export const withLimits = (client, name = (m) => m) => ({
+  messages: { create: (params, opts) => client.messages.create({ ...params, model: name(params && params.model) }, { ...callLimits(params && params.model), ...opts }) },
 });
+// one that is given Bedrock's model IDs and asks with Anthropic's
+export const withBareModels = (client) => withLimits(client, bareModel);
 const count = (v, fallback) => (/^\d+(\.\d+)?$/.test(v || '') ? Number(v) : fallback);
 
 let clients = null;
@@ -93,7 +100,7 @@ async function realClients() {
     claude = withBareModels(new Anthropic({ apiKey: process.env.GUIDE_ANTHROPIC_KEY }));
   } else {
     const { AnthropicBedrockMantle } = await import('@anthropic-ai/bedrock-sdk');
-    claude = new AnthropicBedrockMantle({ awsRegion: region });
+    claude = withLimits(new AnthropicBedrockMantle({ awsRegion: region }));
   }
   const polly = new PollyClient({ region });
   // a line is spoken as SSML when the guide gives it (slower and softer where the dream was

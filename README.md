@@ -64,8 +64,8 @@ at a daily spending limit. Their worlds stay on their TV.
 ## Tests
 
 ```sh
-cd tv && npm install && npm test && npm run e2e   # 86 unit tests; 33 browser steps at 1920 x 1080
-cd server && npm install && npm test              # 87 tests of the story server
+cd tv && npm install && npm test && npm run e2e   # 87 unit tests; 33 browser steps at 1920 x 1080
+cd server && npm install && npm test              # 93 tests of the story server
 cd ../../engine && node --test test.mjs personal/test.mjs dreams/test.mjs   # 93 tests of the engine
 ```
 

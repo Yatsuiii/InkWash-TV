@@ -1,12 +1,13 @@
 #!/usr/bin/env bash
 # Deploys the guide service (template.yaml) after checking everything it needs.
 # Every check is read-only; nothing in AWS changes until `sam deploy` at the end.
-# Usage: ./deploy.sh   (sam deploy --guided then asks for GuideKey, AlertEmail and the limits)
+# Usage: ./deploy.sh   (sam deploy --guided then asks for GuideKey, AlertEmail, the limits, and the
+# AnthropicKey and GeminiKey: type them there, never into a chat)
 set -euo pipefail
 cd "$(dirname "$0")"
 
 STACK=inkwash-guide
-REGION=us-east-1   # the one region with both Claude and Nova Canvas
+REGION=us-east-1   # Polly's voice, Claude on Bedrock (without an AnthropicKey) and Nova Reel are all here
 
 problems=()
 need() { problems+=("$1"); }

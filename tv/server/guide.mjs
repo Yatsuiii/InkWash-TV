@@ -67,6 +67,7 @@ import { checkConversation, agentRequest, agentReply, withoutThinking, speakRequ
 import { wonder } from './worldbuilder.mjs';
 import { REEL, alive, aliveCheck } from './reel.mjs';
 import { world, worldCheck, worldFile } from './marble.mjs';
+import { BadRequest } from './errors.mjs';
 import { real, thing } from './illustrator.mjs';
 import { wide } from './wide.mjs';
 import { scenery, backdrop } from './scenery.mjs';
@@ -163,7 +164,7 @@ Reply with JSON only, nothing before or after it: {"entities": [...], "facts": [
 
 // ---------------------------------------------------------------- what the TV sends
 
-export class BadRequest extends Error {}
+export { BadRequest } from './errors.mjs';
 
 // plain text from the TV or the phone: no markup, braces or quotes, one line, bounded
 const clean = (s, n) => String(s ?? '').replace(/[\u0000-\u001f\u007f]/g, ' ').replace(/[<>{}[\]"`\\]/g, '').replace(/\s+/g, ' ').trim().slice(0, n);

@@ -9,7 +9,7 @@
 // `paint(body)` is Nova Canvas (lambda.mjs: Bedrock InvokeModel), given its request body and
 // returning one base64 image; `budget.take()` says whether a picture is left today (budget.mjs).
 
-import { BadRequest } from './guide.mjs';
+import { BadRequest } from './errors.mjs';
 import { sizeOf } from './reel.mjs';
 import { LOOKS, NOT, NOT_FOR_A_CHILD, REAL } from './illustrator.mjs';
 

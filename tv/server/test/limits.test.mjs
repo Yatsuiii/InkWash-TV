@@ -286,9 +286,47 @@ test('Claude through Anthropic\'s own API: Bedrock\'s model IDs asked for by Ant
   const client = withBareModels({ messages: { async create(p, o) { asked.push([p, o]); return { content: [], usage: {} }; } } });
   const params = { model: 'anthropic.claude-opus-5-5', max_tokens: 10, system: [{ type: 'text', text: 'x', cache_control: { type: 'ephemeral' } }], messages: [{ role: 'user', content: 'Hi' }] };
   await client.messages.create(params, { timeout: 5 });
-  assert.deepEqual(asked[0], [{ ...params, model: 'claude-opus-5-5' }, { timeout: 5 }]);
+  assert.deepEqual(asked[0], [{ ...params, model: 'claude-opus-5-5' }, { timeout: 5, maxRetries: 0 }]);
   assert.equal(params.model, 'anthropic.claude-opus-5-5', 'what was asked is left as it was');
+  // within the function's 120 s: the most capable model once, with room left for the fast one
+  // standing in (its two goes), never the SDK's ten minutes and two more tries
+  await client.messages.create(params);
+  await client.messages.create({ ...params, model: 'anthropic.claude-haiku-4-5' });
+  const [opus, haiku] = [asked[1][1], asked[2][1]];
+  assert.equal(opus.maxRetries, 0);
+  assert.ok(opus.timeout + haiku.timeout * (haiku.maxRetries + 1) <= 120_000, JSON.stringify({ opus, haiku }));
+  // and the Illustrator's goes leave a picture its 70 s (gemini.mjs) within the 120 s too
+  const { GEMINI } = await import('../gemini.mjs');
+  assert.ok(haiku.timeout * (haiku.maxRetries + 1) + GEMINI.timeout <= 120_000);
   // counted at the same price either way
   const usage = { input_tokens: 1000, output_tokens: 100 };
   assert.equal(costOf('claude-opus-5-5', usage), costOf('anthropic.claude-opus-5-5', usage));
+});
+
+test('every package the story server imports is one it depends on itself, not one another package happens to bring', async () => {
+  const { readFileSync, readdirSync } = await import('node:fs');
+  const here = new URL('..', import.meta.url);
+  const own = Object.keys(JSON.parse(readFileSync(new URL('package.json', here), 'utf8')).dependencies);
+  const files = readdirSync(here).filter((f) => f.endsWith('.mjs')).map((f) => new URL(f, here));
+  const used = new Set();
+  for (const f of files) {
+    for (const [, name] of readFileSync(f, 'utf8').matchAll(/(?:from |import\()\s*'([^'.][^']*)'/g)) {
+      if (!name.startsWith('node:')) used.add(name.split('/').slice(0, name.startsWith('@') ? 2 : 1).join('/'));
+    }
+  }
+  assert.ok(used.has('@anthropic-ai/sdk'), 'the scan sees the dynamic imports too');
+  for (const name of used) assert.ok(own.includes(name), `${name} is imported but not in package.json's dependencies`);
+});
+
+test('each module of the story server loads on its own, whichever is imported first', async () => {
+  const { readdirSync } = await import('node:fs');
+  const { spawnSync } = await import('node:child_process');
+  const here = new URL('..', import.meta.url);
+  // dev.mjs starts a server: it is run, not imported
+  const files = readdirSync(here).filter((f) => f.endsWith('.mjs') && f !== 'dev.mjs');
+  assert.ok(files.includes('illustrator.mjs') && files.includes('guide.mjs'));
+  for (const f of files) {
+    const r = spawnSync(process.execPath, ['--input-type=module', '-e', `await import(${JSON.stringify(new URL(f, here).href)})`], { encoding: 'utf8', timeout: 20000 });
+    assert.equal(r.status, 0, `${f} on its own: ${(r.stderr || '').split('\n').find((l) => /Error/.test(l)) || r.stderr}`);
+  }
 });

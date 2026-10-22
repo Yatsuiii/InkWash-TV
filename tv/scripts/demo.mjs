@@ -46,6 +46,8 @@ if (REAL) {
   if (process.env.PICTURES_STAND_IN) nova = Object.assign(standInPaint, { spent: () => 0 });
   else if (process.env.GEMINI_API_KEY) {
     const { geminiPaint } = await import('../server/gemini.mjs');
+    // Gemini can't cut a thing out of its white: the TV does, and no picture is spent asking
+    process.env.GUIDE_CUTOUT = 'tv';
     nova = ledgered(geminiPaint({ key: process.env.GEMINI_API_KEY, log: (m) => console.log(`  ${m}`) }), { ...ledger, price: Number(process.env.PICTURE_PRICE) || 0.15 });
   } else {
     const { BedrockRuntimeClient, InvokeModelCommand } = createRequire(here('../server/package.json'))('@aws-sdk/client-bedrock-runtime');

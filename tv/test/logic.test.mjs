@@ -568,7 +568,8 @@ test('a fresh sheet: the guide counts the strokes from none again, with nothing 
 
 // ---------------------------------------------------------------- the guide, as an agent
 
-import { runGuide, stepOf, closingOf } from '../src/agent.js';
+import { runGuide, stepOf, closingOf, SENT } from '../src/agent.js';
+import { checkConversation } from '../server/agent.mjs';
 import { createTools, firstMessage, laterMessage, finalTelling, briefFor, keptStrokes } from '../src/harness.js';
 import { memoryPaintings } from '../src/paintings.js';
 import { standInAgent } from '../server/agent-standin.mjs';
@@ -889,6 +890,38 @@ test('the loop: bounded, every call answered, reminded once to tell and to remem
   assert.equal(odd.told, true);
   assert.equal(stepOf([call('look', { night: 2 })]), "Looking at chapter 2's painting");
   assert.equal(stepOf([call('strokes', { strokes: [4] })]), 'Reading how you painted mark 4');
+});
+
+test('a long telling stays within what the guide service takes: pictures past its limit said in words, a long result cut short, the turns before never changed', async () => {
+  const big = `data:image/jpeg;base64,${'A'.repeat(400_000)}`;
+  const call = (name, id) => ({ type: 'tool_use', id, name, input: {} });
+  const sent = [];
+  let round = 0;
+  // a guide that looks three times every turn, and reads a long memory once
+  const ai = { agent: async ({ messages }) => {
+    checkConversation(messages); // as the service would: it throws on what it would turn down
+    sent.push(JSON.stringify(messages));
+    round++;
+    return round === 1 ? { content: [call('recall', 'r1')], stop_reason: 'tool_use' } : { content: [call('look', `a${round}`), call('look', `b${round}`), call('look', `c${round}`)], stop_reason: 'tool_use' };
+  } };
+  const tools = { look: async () => ({ image: big, text: 'seen' }), recall: async () => ({ memory: 'x'.repeat(SENT.text + 10_000) }) };
+  const r = await runGuide({ ai, first: [{ type: 'text', text: 'Tell it.' }, { type: 'image', source: { type: 'base64', media_type: 'image/jpeg', data: big.split(',')[1] } }], tools, limits: { rounds: 14 } });
+  assert.equal(sent.length, 14, 'every turn was sent, none turned down');
+  const blocks = r.messages.flatMap((m) => (Array.isArray(m.content) ? m.content : [])).flatMap((b) => (b.type === 'tool_result' && Array.isArray(b.content) ? b.content : [b]));
+  assert.equal(blocks.filter((b) => b.type === 'image').length, SENT.images);
+  assert.ok(blocks.some((b) => b.type === 'text' && /No more pictures tonight/.test(b.text)));
+  const recalled = r.messages.flatMap((m) => (Array.isArray(m.content) ? m.content : [])).find((b) => b.tool_use_id === 'r1');
+  assert.ok(recalled.content.length <= SENT.text && /cut short/.test(recalled.content));
+  // each conversation sent begins with the one before it, exactly
+  for (let i = 1; i < sent.length; i++) assert.ok(sent[i].startsWith(sent[i - 1].slice(0, -1)), `turn ${i} changed what went before`);
+  // and the heaviest first turn the TV makes is one the service takes: as many strokes as a remark
+  // may carry (200), and as many words from the phone as it keeps (40)
+  const many = Array.from({ length: 200 }, (_, i) => ({ ...NIGHT_STROKES[i % 2], n: i + 1, box: [100 + i, 590, 1500 - i, 620 + (i % 300)], ms: 4123 + i, gap: 1.27, still: 0.31, pressure: 0.537 }));
+  const heavy = tonightCtx({ strokes: many, points: many.map((x) => [{ x: x.from[0], y: x.from[1] }, { x: x.to[0], y: x.to[1] }]), feeling: { byStroke: many.map((_, i) => Math.sin(i) * 0.7), arousal: many.map((_, i) => Math.cos(i) * 0.6) },
+    words: Array.from({ length: 40 }, (_, i) => ({ n: i + 1, text: 'a boat waiting at the pier with a lamp that swings in the wind '.repeat(5).slice(0, 300) })), said: Array(12).fill('A shore? Something waits there.') });
+  const opening = firstMessage(heavy, { numbered: PIC, brief: briefFor(createDreamWorld(), heavy) });
+  assert.ok(opening.find((b) => b.type === 'text').text.length > 40_000, 'a long first turn');
+  checkConversation([{ role: 'user', content: opening }]);
 });
 
 test('a head start: the guide\'s first turn goes while they mark it; the next waits for what they marked, and carries it once, after the results', async () => {

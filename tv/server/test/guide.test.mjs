@@ -731,7 +731,9 @@ test('the agent: what the TV may send is checked, block by block', () => {
   bad([{ role: 'user', content: firstTurn }, { role: 'assistant', content: [{ type: 'thinking', thinking: 'x' }] }, { role: 'user', content: 'x' }], /not a block/);
   bad([{ role: 'user', content: [{ type: 'image', source: { type: 'url', url: 'https://example.com/a.jpg' } }] }], /JPEG or PNG/);
   bad([{ role: 'user', content: [{ type: 'document', source: {} }] }], /no document/);
-  bad([{ role: 'user', content: 'x'.repeat(30001) }], /too long/);
+  bad([{ role: 'user', content: 'x'.repeat(200_001) }], /too long/);
+  // a long first turn (a night of many strokes, words and chapters) is taken; it is the whole that is held down
+  assert.doesNotThrow(() => checkConversation([{ role: 'user', content: 'x'.repeat(60_000) }]));
   bad([{ role: 'user', content: Array.from({ length: 15 }, () => firstTurn[0]) }], /too many pictures/);
 });
 
@@ -960,6 +962,10 @@ test('the Illustrator: it sees the painting and writes the scene, held to their 
   const clips = await handle('/real', { image: IMAGE, brief }, { claude: fakeClaude(JSON.stringify(good)), paint: async () => standInPaint(), reel: standInReel({ clip: 'x', type: 'video/mp4' }) });
   assert.equal(clips.json.alive, 'video/mp4');
   assert.match(r.json.image, /^data:image\/png;base64,iVBOR/);
+  // a picture too big for Lambda's answer is said so, not sent and failed
+  const huge = await handle('/real', { image: IMAGE, brief }, { claude: fakeClaude(JSON.stringify(good)), paint: async () => 'A'.repeat(REAL.most + 4), log: () => {} });
+  assert.deepEqual(huge.json, { off: true, big: true });
+  assert.ok(REAL.most < 6 * 1024 * 1024 * 0.95, 'room for the rest of the answer inside 6 MB');
   assert.equal(r.json.scene, scene);
   assert.deepEqual(r.json.looks.map((l) => [l.id || l.name, l.look, l.kept]), [['e1', 'a small red wooden ferry with one round lantern', true], ['the white heron', 'a tall white heron with black-tipped wings', false]], 'a kept look stays');
   assert.equal(claude.asked.length, 2);

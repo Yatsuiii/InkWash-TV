@@ -13,7 +13,7 @@
 // { status: 'InProgress' | 'Completed' | 'Failed', url?, why? }; `reel.type` is the kind of video
 // its clips are (REEL.type, unless it says otherwise). lambda.mjs makes them from Bedrock
 // and S3; dev.mjs and the tests stand in for them (standInReel). Without `reel`, there are no clips.
-import { BadRequest } from './guide.mjs';
+import { BadRequest } from './errors.mjs';
 
 export const REEL = {
   model: 'amazon.nova-reel-v1:0',

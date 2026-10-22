@@ -13,7 +13,7 @@
 // are no pictures. dev.mjs and the tests stand in for all three. Nothing is kept here.
 
 import { checkIllustration, ILLUSTRATE } from './engine/dreams/index.mjs';
-import { BadRequest } from './guide.mjs';
+import { BadRequest } from './errors.mjs';
 
 export const REAL = {
   model: 'amazon.nova-canvas-v1:0',
@@ -26,6 +26,7 @@ export const REAL = {
   quality: 'standard',
   seeds: 858993459, // the largest seed it takes
   text: 1024, // the longest prompt it takes
+  most: 5_500_000, // the most of a picture sent back (base64), inside Lambda's 6 MB answer
 };
 // how it looks: real, for a grown-up's world; a frame of a warm animated film, for a child's; and,
 // painted again (main.js PAINT_AGAIN), as a painting or a picture-book page
@@ -151,6 +152,7 @@ export async function real(body, { claude, paint = null, budget = null, model, l
   try {
     const out = String(await paint(realRequest({ image: r.image.data, scene: ill.scene, looks: ill.looks, young: r.young, look: r.look, seed: r.seed })) || '');
     if (!/^[A-Za-z0-9+/=]{100,}$/.test(out)) throw new Error('no picture came back');
+    if (out.length > REAL.most) { log(`dream it real: too big to send (${out.length})`); return { status: 200, json: { off: true, big: true } }; }
     return { status: 200, json: { image: `data:image/${out.startsWith('/9j/') ? 'jpeg' : 'png'};base64,${out}`, scene: ill.scene, looks: ill.looks } };
   } catch (err) {
     if (!isBlocked(err)) throw err;
@@ -172,7 +174,7 @@ export async function real(body, { claude, paint = null, budget = null, model, l
 // thing (IMAGE_VARIATION; `similar`: how close to it, 0.2 to 1); and once painted, Nova Canvas cuts
 // it out itself, its edges clean (BACKGROUND_REMOVAL, counted with the day's pictures too), or the TV
 // cuts the white away if that can't be had
-export const THING = { min: 320, most: 768, strength: 0.5, cfg: 7, quality: 'standard', name: 60, look: 160, rule: 160, place: 160, big: 3_000_000, share: 0.75, similar: 0.6 };
+export const THING = { min: 320, most: 768, strength: 0.5, cfg: 7, quality: 'standard', name: 60, look: 160, rule: 160, place: 160, big: 5_500_000, share: 0.75, similar: 0.6 };
 // never in it, besides what is never in any picture: anything but the thing itself
 export const NOT_THING = 'background, scenery, landscape, ground, floor, grass, sky, horizon, cast shadow, other objects, several, crowd, cropped, cut off';
 

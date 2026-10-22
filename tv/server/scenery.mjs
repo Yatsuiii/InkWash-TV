@@ -8,7 +8,7 @@
 // answers in its place for the dev server and the tests.
 
 import { checkScene, sceneBrief, SHAPES, GROUND_KINDS, AIR_KINDS, LIGHT_KINDS } from './engine/dreams/index.mjs';
-import { BadRequest } from './guide.mjs';
+import { BadRequest } from './errors.mjs';
 import { REAL } from './illustrator.mjs';
 
 export const SCENE_SYSTEM = `You are the Set Designer of one person's imagined world, kept on their TV in Inkwash. They paint their world a piece at a time with the TV remote, and a storyteller tells each painting back. The TV shows their world as a place they can look across and walk through, with each thing they painted standing in it. You decide what that place is.

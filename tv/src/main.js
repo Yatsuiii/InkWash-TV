@@ -2052,7 +2052,10 @@ async function placeOf(A, scene) {
     try { r = await ai.backdrop({ scene, image: c.toDataURL('image/jpeg', 0.85), young: !!p.young, seed: realSeed(`place:${p.id}`) }); } catch (err) { console.log(`the place, painted: ${err.message}`); }
     if (!r || !r.image) { if (r && r.blocked) console.log('the place, painted: turned down'); return; }
     placeAsked.paint.delete(w);
-    await pics.put(PLACE, { image: r.image, sign: signOf(scene), at: Date.now() }).catch((err) => console.log(`the place, not kept: ${err.message}`));
+    // kept as a JPEG at the size the TV draws it from: an image model may send a PNG several times
+    // the size, and every world keeps one
+    const keep = await asJpeg(r.image, 1536, 0.88).catch(() => r.image);
+    await pics.put(PLACE, { image: keep, sign: signOf(scene), at: Date.now() }).catch((err) => console.log(`the place, not kept: ${err.message}`));
     const img = new Image(); img.src = r.image;
     return img.decode().then(() => show(img)).catch(() => {});
   }

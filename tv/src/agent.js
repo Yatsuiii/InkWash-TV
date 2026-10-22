@@ -37,6 +37,32 @@ function asResult(id, out) {
 }
 const failed = (id, message) => ({ type: 'tool_result', tool_use_id: id, content: String(message).slice(0, 500), is_error: true });
 
+// What the guide service takes in one conversation (server/agent.mjs LIMITS), with room to spare.
+// Past it a picture is said in words, not sent, and only in the turn being added: the turns before
+// stay exactly as they went, as Claude's thinking needs (were the service to turn the whole
+// conversation down, the telling would fall back to the TV's own).
+export const SENT = { images: 12, size: 5_000_000, text: 150_000 };
+const NO_MORE = 'No more pictures tonight: go on from what you have seen.';
+const picturesIn = (content) => (Array.isArray(content) ? content.reduce((n, b) => n + (b.type === 'image' ? 1 : b.type === 'tool_result' ? picturesIn(b.content) : 0), 0) : 0);
+export function withinLimits(messages, results) {
+  let images = messages.reduce((n, m) => n + picturesIn(m.content), 0);
+  let size = JSON.stringify(messages).length + JSON.stringify(results).length;
+  return results.map((r) => {
+    // a result too long for the service is cut short, and says so
+    if (typeof r.content === 'string' && r.content.length > SENT.text) return { ...r, content: `${r.content.slice(0, SENT.text - 40)} … (cut short: too long to send)` };
+    if (!Array.isArray(r.content) || !picturesIn(r.content)) return r;
+    return {
+      ...r,
+      content: r.content.map((b) => {
+        if (b.type !== 'image') return b;
+        if (images < SENT.images && size <= SENT.size) { images++; return b; }
+        size -= b.source.data.length;
+        return { type: 'text', text: NO_MORE };
+      }),
+    };
+  });
+}
+
 // Its closing line, shown in their world as they come back to it: never a goodnight, whatever the
 // model says (they may be painting at any time of day), so a sentence that says one is left out
 const BEDTIME = /\b(good ?night|night night|sleep (well|tight)|sweet dreams|time for bed|off to bed)\b/i;
@@ -115,7 +141,7 @@ export async function runGuide({ ai, first, tools, limits = {}, onTurn = () => {
         results.push(failed(c.id, err && err.message ? err.message : 'That did not work.'));
       }
     }
-    messages.push({ role: 'user', content: results });
+    messages.push({ role: 'user', content: withinLimits(messages, results) });
   }
   return { told, kept, goodnight, early, rounds: messages.filter((m) => m.role === 'assistant').length, messages };
 }

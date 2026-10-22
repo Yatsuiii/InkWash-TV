@@ -13,7 +13,7 @@
 // world once it is done; `marble.fetch(url)` a world file's bytes. lambda.mjs makes them from the
 // World Labs API (the requests as the Dream Canvas, an earlier prototype, sent them);
 // dev.mjs and the tests stand in for them (standInMarble). Without `marble`, there are no worlds.
-import { BadRequest } from './guide.mjs';
+import { BadRequest } from './errors.mjs';
 import { sizeOf } from './reel.mjs';
 
 export const MARBLE = {

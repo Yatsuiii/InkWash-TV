@@ -211,7 +211,9 @@ export const TOOL_NAMES = new Set(AGENT_TOOLS.map((t) => t.name));
 // ---------------------------------------------------------------- what the TV sends
 
 export class BadConversation extends Error {}
-const LIMITS = { messages: 80, text: 30000, images: 14, image: 1_500_000, total: 5_500_000 };
+// `text`: one block; a night of many strokes, words and chapters makes a long first turn (a 200-stroke
+// night with its 40 words is some 46,000 characters), so it is the whole that is held down (`total`)
+const LIMITS = { messages: 80, text: 200_000, images: 14, image: 1_500_000, total: 5_500_000 };
 const IMAGE = /^(image\/jpeg|image\/png)$/;
 const isObj = (x) => x && typeof x === 'object' && !Array.isArray(x);
 

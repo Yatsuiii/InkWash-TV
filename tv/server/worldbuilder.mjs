@@ -8,7 +8,7 @@
 // answers in its place for the dev server and the tests.
 
 import { checkWonder, WONDER } from './engine/dreams/index.mjs';
-import { BadRequest } from './guide.mjs';
+import { BadRequest } from './errors.mjs';
 
 export const WONDER_SYSTEM = `You are the Worldbuilder of one person's imagined world, kept on their TV in Inkwash. They paint their world a piece at a time with the TV remote, and a storyteller tells each painting back. Between paintings, you help their world grow.
 
