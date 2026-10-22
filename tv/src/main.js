@@ -27,7 +27,7 @@ import { replayPlan, replayAt, createDial, createFeeling } from './feel.js';
 import { loadWorld, putWorld, tonightOf, welcomeOf, keptOf, sitter, keepWorld, loadApart, apartKeys, roomOf, roomSays } from './world.js';
 import { createPhone, qrSvg } from './phone.js';
 import { runGuide, stepOf } from './agent.js';
-import { SHEET as PANORAMA, nextLook, LOOK_NAMES, versionLabel, isVersionLabel, panStep, panOffset } from './wide.js';
+import { SHEET as PANORAMA, nextLook, LOOK_NAMES, versionLabel, isVersionLabel, panStep, panOffset, MORE, foldChoices } from './wide.js';
 import { createTools, firstMessage, laterMessage, briefFor, createRenderer, finalTelling } from './harness.js';
 import { createPaintings, createNights, createWorlds, PLACE } from './paintings.js';
 import { regionOf, conditionOf, cutAway, solidOf, signOfThing } from './things.js';
@@ -172,7 +172,7 @@ function updateHints() {
   else if (state.mode === 'ask') html = state.ask && state.ask.agent ? `<span>${KEY('◀')}${KEY('▶')}choose</span><span>${KEY('OK')}answer</span>${phone && phone.listening ? '<span>or say it on your phone</span>' : ''}<span>${KEY('Back')}skip</span>` : `<span>${KEY('◀')}${KEY('▶')}choose</span><span>${KEY('OK')}tell it</span><span>${KEY('Back')}back to drawing</span>`;
   else if (state.mode === 'feel') html = `<span>${KEY('◀')}${KEY('▶')}choose</span><span>${KEY('OK')}tell it</span><span>${KEY('Back')}back to drawing</span>`;
   else if (state.mode === 'guide') html = `<span>${KEY('Back')}back to drawing</span>`;
-  else if (state.mode === 'offer') html = `<span>${KEY('◀')}${KEY('▶')}choose</span><span>${KEY('OK')}choose</span><span>${KEY('Back')}${state.offer && state.offer.recap ? 'not now' : state.offer && state.offer.after ? 'a clean sheet' : 'that’s the end'}</span>`;
+  else if (state.mode === 'offer') html = `<span>${KEY('◀')}${KEY('▶')}choose</span><span>${KEY('OK')}choose</span><span>${KEY('Back')}${state.offer && state.offer.more ? 'back' : state.offer && state.offer.recap ? 'not now' : state.offer && state.offer.after ? 'a clean sheet' : 'that’s the end'}</span>`;
   else if (state.mode === 'wide') html = `<span>${KEY('◀')}${KEY('▶')}look around</span><span>${KEY('Back')}back to your picture</span>`;
   else if (state.mode === 'realwalk') html = `<span>${KEY('▲')}${KEY('▼')}walk</span><span>${KEY('◀')}${KEY('▶')}turn</span><span>${KEY('Back')}back to your picture</span>`;
   else if (state.mode === 'inside') html = `<span>${KEY('◀')}${KEY('▶')}turn it round</span><span>${KEY('▲')}${KEY('▼')}nearer · further</span><span>${KEY('OK')}the next thing</span><span>${KEY('Back')}back to what you drew</span>`;
@@ -3292,7 +3292,7 @@ const OFFER = ['Draw what happens next', 'Step inside', 'That’s the end'];
 const awayFromSay = () => !$('#say').hidden && !$('#say').classList.contains('high');
 function offerEnding(o) {
   state.mode = 'offer';
-  state.offer = { ...o, i: 0 };
+  state.offer = { ...o, i: 0, more: false };
   const el = $('#feel');
   el.querySelector('.ask').textContent = 'What happens next?';
   el.querySelector('.marks').textContent = painter && painter.young ? 'You can make it go any way you like.' : 'Draw more of it, or a different ending, and hear it told your way.';
@@ -3307,22 +3307,39 @@ function offerEnding(o) {
   updateHints();
   if (readsAloud()) aloud.say('What happens next?');
 }
+// tonight's row, the picture's own choices folded under More… when there are too many for one line
+const offerRow = () => foldChoices([...OFFER.slice(0, 2), ...aliveChoice(state.offer), ...walkChoice(state.offer), OFFER[2]], pictureChoices(state.offer), { open: !!(state.offer && state.offer.more) });
 const offerChoices = () => (state.offer && state.offer.after
   ? [AFTER[0], ...walkChoice(state.offer), ...keptWideChoice(state.offer), AFTER[1]]
-  : [...OFFER.slice(0, 2), ...aliveChoice(state.offer), ...walkChoice(state.offer), ...pictureChoices(state.offer), OFFER[2]]);
+  : offerRow().choices);
 function showOffer() {
   walkAhead(state.offer);
   $('#feel .chips').innerHTML = offerChoices().map((c, i) => `<span class="chip${i === state.offer.i ? ' on' : ''}">${c}</span>`).join('');
 }
 function offerPress(button) {
-  const o = state.offer, n = offerChoices().length;
+  const o = state.offer;
+  // More…: the picture's own choices in the row's place; Back, the row again, on More…
+  if (!o.after && (button === 'select' || button === 'playpause') && !o.more && offerChoices()[o.i] === MORE) {
+    o.more = true; o.i = 0;
+    showOffer(); updateHints(); sound.dip(false);
+    if (readsAloud()) aloud.say(offerChoices()[0]);
+    return;
+  }
+  if (o.more && button === 'back') {
+    o.more = false; o.i = Math.max(0, offerChoices().indexOf(MORE));
+    showOffer(); updateHints(); sound.dip(false);
+    return;
+  }
+  // (none of the picture's own left to fold: the row as it was)
+  if (o.more && !offerRow().folded) { o.more = false; o.i = Math.min(o.i, offerChoices().length - 1); }
+  const n = offerChoices().length;
   if (button === 'left' || button === 'up' || button === 'right' || button === 'down') {
     o.i = (o.i + (button === 'left' || button === 'up' ? n - 1 : 1)) % n;
     showOffer(); sound.dip(false);
     if (readsAloud()) aloud.say(offerChoices()[o.i]);
     return;
   }
-  if ((button === 'select' || button === 'playpause') && o.i === 0) return o.after ? stepInside(o) : startEnding();
+  if ((button === 'select' || button === 'playpause') && o.i === 0 && !o.more) return o.after ? stepInside(o) : startEnding();
   if ((button === 'select' || button === 'playpause') && !o.after && offerChoices()[o.i] === OFFER[1]) return stepInside(o);
   if ((button === 'select' || button === 'playpause') && !o.after && Object.values(ALIVE.say).includes(offerChoices()[o.i])) return aliveChosen(o);
   if ((button === 'select' || button === 'playpause') && Object.values(WALK.say).includes(offerChoices()[o.i])) return walkChosen(o);

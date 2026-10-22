@@ -34,12 +34,7 @@ export const App = () => {
         javaScriptEnabled
         mediaPlaybackRequiresUserAction={false}
         mixedContentMode="compatibility"
-        // thirdPartyCookiesEnabled
-        // userAgent={''}
-        source={{
-          // headers: {},
-          uri: "file:///pkg/assets/index.html",
-        }}
+        source={{uri: 'file:///pkg/assets/index.html'}}
         onLoad={(_event: WebViewNavigationEvent) => {
           console.info('Page loading completed...');
           // Hide the splash screen
@@ -52,6 +47,8 @@ export const App = () => {
           nativeEvent: {code, url, description},
         }: WebViewErrorEvent) => {
           console.error(`[onError]: (${code}: ${url}) ${description}`);
+          // never left on the splash screen: what the WebView shows instead is better than that
+          hideSplashScreenCallback();
         }}
         onHttpError={({
           nativeEvent: {url, statusCode: code, description, isMainFrame},

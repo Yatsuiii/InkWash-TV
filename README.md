@@ -7,6 +7,21 @@ Our entry to the Amazon Developer Hackathon 2026, Fire TV track: a Vega OS app, 
 on AWS (AWS Lambda, Amazon Polly, DynamoDB), Claude as its storyteller and pictures from Google's
 Gemini.
 
+**Start here**
+
+- **Watch:** the demo video is linked from our Devpost entry.
+- **Try it in a few minutes, with no keys and no cost** (Node 20 or later, two terminals):
+
+  ```sh
+  cd tv && npm install && npm start                      # the TV page on http://localhost:5180
+  cd tv/server && npm install && npm run stand-in        # a scripted storyteller on http://localhost:5188
+  ```
+
+  Then open `http://localhost:5180/?guide=http://localhost:5188&demo`. Arrows move, Enter is OK, Esc
+  is Back, P is play/pause. [`TESTING.md`](TESTING.md) has what to try, and how to install it on a
+  Fire TV.
+- **See how it's built:** the diagram under *How it's built*, then [`tv/README.md`](tv/README.md).
+
 ![Star's world on the TV: everything drawn in it standing where it first came](tv/docs/gallery/02-their-world.jpg)
 
 ## What it does
@@ -18,7 +33,7 @@ Gemini.
   line at a time, read aloud by Amazon Polly. ▲ keeps a line; ▼ says "not quite" and hears it
   another way at once.
 - **It wakes up in its place.** The Set Designer writes where your world stands from its story, and
-  an image model (Gemini 3 Pro Image) paints it, and each thing in it, held to the shapes you
+  an image model (Gemini 3 Pro Image) paints it, and each thing in it, keeping to the layout you
   drew. We built the pictures on Amazon Nova Canvas, which AWS retired on 30 September 2026, so the
   server now asks Gemini for the same pictures.
 - **Then more, when you want it.** *See all around it*, a panorama to look across; *Paint it again* in another look; *Walk inside*, a 3D
@@ -42,11 +57,12 @@ at a daily spending limit. Their worlds stay on their TV.
 
 ## Try it
 
-- **On a Fire TV, or in a browser without AWS:** [`TESTING.md`](TESTING.md). The browser version
-  takes about five minutes with Node 20 or later, and uses a scripted stand-in for the storyteller,
-  so it costs nothing.
-- **With the real storyteller:** deploy the story server to your own AWS account (`sam deploy`),
-  as [`tv/README.md`](tv/README.md) describes under *Deploying the story server*.
+- **In a browser, without AWS:** the two commands under *Start here*. The storyteller is a scripted
+  stand-in, so it costs nothing and makes no pictures.
+- **On a Fire TV:** [`TESTING.md`](TESTING.md).
+- **With the real storyteller:** deploy the story server to your own AWS account (`sam deploy`,
+  with an Anthropic API key and a Gemini API key), as [`tv/README.md`](tv/README.md) describes under
+  *Deploying the story server*.
 
 ## How it's built
 
@@ -64,23 +80,25 @@ at a daily spending limit. Their worlds stay on their TV.
 ## Tests
 
 ```sh
-cd tv && npm install && npm test && npm run e2e   # 87 unit tests; 33 browser steps at 1920 x 1080
+cd tv && npm install && npm test && npm run e2e   # 88 unit tests; 33 browser steps at 1920 x 1080
 cd server && npm install && npm test              # 93 tests of the story server
 cd ../../engine && node --test test.mjs personal/test.mjs dreams/test.mjs   # 93 tests of the engine
 ```
 
 The browser steps drive the real page with simulated remote keys, against the story server's own
 code with a script standing in for Claude. `npm run e2e:bundle` runs them again on the packaged
-single file, opened from `file://` as the Vega app loads it.
+single file, opened from `file://` as the Vega app loads it. Among the server's tests, the deployed
+path runs end to end: the real Lambda handler, Anthropic SDK and Gemini client, with only the two
+APIs faked at the network, each turning away what the real one would.
 
 ## What hasn't been tried yet
 
-- **No paid call has been made from the TV.** The real storyteller and Worldbuilder have told 24
-  worlds through Claude Code on a Claude subscription, but never from the story server (Amazon
-  Bedrock's models aren't open to our new AWS account, so it calls Anthropic's API instead), and no
-  real picture, panorama or World Labs world has been made: the tests use stand-ins, Gemini's
-  API among them. *Watch it come alive* (six seconds of Amazon Nova Reel) is off: AWS retired
-  Nova Reel too.
+- **No paid call has been made from the story server yet.** The real storyteller and Worldbuilder
+  have told 24 worlds through Claude Code on a Claude subscription, but not through the deployed
+  server. That server calls Anthropic's API, because Amazon Bedrock's models aren't open to our new
+  AWS account. No real picture, panorama or World Labs world has been made: the tests use
+  stand-ins for Gemini and World Labs. *Watch it come alive* (six seconds of Amazon Nova Reel) is
+  off, because AWS retired Nova Reel too.
 - **The Vega app has not run on a device.** It builds for the Vega Virtual Device and for Fire TV
   sticks, but our build machine had no hardware acceleration (KVM), and the simulator runs a
   WebView app only on an Apple Silicon Mac, so everything was tested in Chromium at 1920 × 1080

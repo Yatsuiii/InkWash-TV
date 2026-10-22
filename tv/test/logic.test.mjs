@@ -2139,7 +2139,7 @@ test('walking inside a world built from their picture: a press a step or a turn,
   assert.ok(Math.abs(Math.hypot(at.x, at.z) - REACH) < 1e-9, JSON.stringify(at));
 });
 
-import { SHEET as PANORAMA, nextLook, LOOK_NAMES, versionLabel, isVersionLabel, panStep, panOffset, PAN } from '../src/wide.js';
+import { SHEET as PANORAMA, nextLook, LOOK_NAMES, versionLabel, isVersionLabel, panStep, panOffset, PAN, MORE, foldChoices } from '../src/wide.js';
 import { WIDE } from '../server/wide.mjs';
 import { LOOKS } from '../server/illustrator.mjs';
 
@@ -2172,4 +2172,15 @@ test('all around it, and painted again: the sheet the server takes, the next loo
   assert.equal(panOffset(0), -0);
   assert.equal(Math.round(panOffset(1)), -Math.round((2560 / 800) * 1080 - 1920));
   assert.equal(panOffset(1, { W: 1280, H: 800 }), (1920 - 1728) / 2, 'a picture no wider than the screen stays in the middle');
+});
+
+test('what happens next, on one row: past five choices the picture\'s own fold under More…, just before the last; opened, they stand in the row\'s place; fewer, or only one, and nothing folds', () => {
+  const row = ['Draw what happens next', 'Step inside', 'Watch it come alive', 'Walk inside', 'That’s the end'];
+  const pics = ['See all around it', 'Paint it again', 'Picture 2 of 2'];
+  assert.deepEqual(foldChoices(row, pics), { choices: ['Draw what happens next', 'Step inside', 'Watch it come alive', 'Walk inside', MORE, 'That’s the end'], folded: true });
+  assert.deepEqual(foldChoices(row, pics, { open: true }), { choices: pics, folded: true });
+  assert.deepEqual(foldChoices(['Draw what happens next', 'Step inside', 'That’s the end'], pics.slice(0, 2)).choices, ['Draw what happens next', 'Step inside', 'See all around it', 'Paint it again', 'That’s the end'], 'five: as it was');
+  assert.deepEqual(foldChoices(row, ['See all around it']).choices, ['Draw what happens next', 'Step inside', 'Watch it come alive', 'Walk inside', 'See all around it', 'That’s the end'], 'one alone is not folded');
+  assert.deepEqual(foldChoices(row, [], { open: true }), { choices: row, folded: false }, 'nothing to open');
+  assert.equal(MORE, 'More…');
 });

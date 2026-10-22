@@ -16,16 +16,20 @@ package, `inkwashtv_aarch64.vpkg`, is attached to our Devpost submission, or bui
 4. `vega device install-app --packagePath inkwashtv_aarch64.vpkg`, then
    `vega device launch-app --appName com.yatsuiii.inkwashtv.main`.
 
+A package built without a story server's address (as the one attached may be) still runs: the TV
+tells each drawing in plain words of its own and makes no pictures, and the demo family is all
+there. Built with one, it uses the real storyteller.
+
 The first time it opens, Inkwash shows what it is in about twenty seconds (any button skips it),
 then the seals. Press ▶‖ there for the demo family, as in the video (Back leaves it); the TV's own
 family starts empty. *What to try*, below, works the same on the TV, with the remote's own buttons.
 
-**In a browser, without AWS** (about five minutes, Node 20 or later):
+**In a browser, without AWS** (about five minutes, Node 20 or later). From the repository's root,
+in two terminals:
 
 ```sh
-cd tv
-npm install && npm start                          # the TV page, http://localhost:5180
-cd server && npm install && npm run stand-in      # a scripted storyteller, http://localhost:5188
+cd tv && npm install && npm start                  # the TV page, http://localhost:5180
+cd tv/server && npm install && npm run stand-in    # a scripted storyteller, http://localhost:5188
 ```
 
 Open `http://localhost:5180/?guide=http://localhost:5188&demo`. The keyboard stands in for the

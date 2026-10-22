@@ -515,7 +515,7 @@ try {
     assert(w.world.nights === 1, JSON.stringify(w.world));
     assert(w.say === 'New in your world: the night ferry.', w.say);
     const offer = await tv(() => ({ ask: document.querySelector('#feel .ask').textContent, chips: [...document.querySelectorAll('#feel .chip')].map((c) => c.textContent), offer: window.__inktv.offer, hints: document.querySelector('#hints').textContent }));
-    assert(offer.ask === 'What happens next?' && JSON.stringify(offer.chips) === '["Draw what happens next","Step inside","Watch it come alive","Walk inside","See all around it","Paint it again","That’s the end"]' && offer.offer.i === 0 && /that’s the end/.test(offer.hints), JSON.stringify(offer));
+    assert(offer.ask === 'What happens next?' && JSON.stringify(offer.chips) === '["Draw what happens next","Step inside","Watch it come alive","Walk inside","More…","That’s the end"]' && offer.offer.i === 0 && /that’s the end/.test(offer.hints), JSON.stringify(offer));
     // made real: the Illustrator was asked once, as the story began, with their ink and the story;
     // told to the end, the ink bloomed into the picture
     const reals = asked.filter((a) => a.path === '/real');
@@ -587,11 +587,20 @@ try {
   // the picture painted again, not counted with each night's first
   const paintedAgain = new Set();
   await check('all around it, and painted again: the picture made real widened into a panorama they look across with ◀ ▶, kept with the night; painted again as a painting, and back to the first with OK', async () => {
+    const chips = () => tv(() => [...document.querySelectorAll('#feel .chip')].map((c) => c.textContent));
     const choose = async (name) => {
+      // the picture's own choices are under More…: OK on it opens them
+      if (!(await chips()).includes(name) && (await chips()).includes('More…')) {
+        for (let k = 0; k < 9 && (await tv(() => window.__inktv.offer.choice)) !== 'More…'; k++) await pressKey('ArrowRight');
+        await pressKey('Enter');
+      }
       for (let k = 0; k < 9 && (await tv(() => window.__inktv.offer.choice)) !== name; k++) await pressKey('ArrowRight');
       assert((await tv(() => window.__inktv.offer.choice)) === name, `${name}: ${JSON.stringify(await tv(() => window.__inktv.offer))}`);
     };
     await choose('See all around it');
+    const opened = await chips();
+    assert(JSON.stringify(opened) === '["See all around it","Paint it again"]' && /Back.*back/.test(await tv(() => document.querySelector('#hints').textContent)), JSON.stringify(opened));
+    await shot('tv-6d-more.png');
     await pressKey('Enter');
     await page.waitForFunction(() => window.__inktv.wide.open && window.__inktv.wide.status === 'done', null, { timeout: 15000 });
     const wide = asked.filter((a) => a.path === '/wide');
@@ -628,7 +637,9 @@ try {
     await pressKey('Enter');
     assert(JSON.stringify(await tv(() => [window.__inktv.versions.k, window.__inktv.offer.choice])) === '[0,"Picture 1 of 2"]', 'back to the first');
     await kept((p) => p && p.wide && p.real > 0);
-    // and back to the first choice, for what comes next
+    // Back: the row again, on More…; and back to the first choice, for what comes next
+    await pressKey('Escape');
+    assert((await tv(() => window.__inktv.offer.choice)) === 'More…' && (await chips()).includes('Draw what happens next'), JSON.stringify(await chips()));
     for (let k = 0; k < 9 && (await tv(() => window.__inktv.offer.i)) !== 0; k++) await pressKey('ArrowRight');
     assert((await tv(() => window.__inktv.offer.choice)) === 'Draw what happens next');
   });

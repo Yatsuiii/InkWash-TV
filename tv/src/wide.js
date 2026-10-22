@@ -23,6 +23,18 @@ export const LOOK_NAMES = { real: 'as a photograph', painting: 'as a painting', 
 export const versionLabel = (k, n) => `Picture ${k + 1} of ${n}`;
 export const isVersionLabel = (s) => /^Picture \d+ of \d+$/.test(String(s || ''));
 
+// "What happens next?" on one row of a TV: past `most` choices, the picture's own (all around it,
+// paint it again, which version) fold under one, More…, just before the last choice; chosen, More…
+// opens them in the row's place (`open`), and Back closes them. Fewer, or only one of the picture's
+// own, and the row is as it was. `row` ends with the choice that ends it.
+export const MORE = 'More…';
+export function foldChoices(row, pictures = [], { most = 5, open = false } = {}) {
+  const end = row.length - 1;
+  const all = [...row.slice(0, end), ...pictures, ...row.slice(end)];
+  if (all.length <= most || pictures.length < 2) return { choices: all, folded: false };
+  return { choices: open ? pictures.slice() : [...row.slice(0, end), MORE, ...row.slice(end)], folded: true };
+}
+
 // Looking around a panorama: `x` from 0 (its left end) to 1 (its right), and the way it drifts
 // (`v`, 1 or -1) when no arrow is held. Held, an arrow looks that way at `speed` a second; let go,
 // it drifts on slowly the same way, and turns back at each end.

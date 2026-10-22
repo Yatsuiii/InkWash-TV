@@ -1,12 +1,13 @@
 # Friction log: building Inkwash for Fire TV (Vega OS) with AWS
 
 What got in our way while building Inkwash, a Vega OS app where the remote is an ink brush, a
-phone lends a microphone, a storyteller on Amazon Bedrock tells each drawing back as a story in
-Amazon Polly's voice, and an image model makes a drawing real: Amazon Nova Canvas, until AWS
-retired it (entry 15), and now Google's Gemini.
+phone lends a microphone, a storyteller (Claude, built for Amazon Bedrock and now called through
+Anthropic's API, entry 15) tells each drawing back as a story in Amazon Polly's voice, and an image
+model makes a drawing real: Amazon Nova Canvas, until AWS retired it (entry 15), and now Google's
+Gemini.
 Each entry says what we were doing, what happened, how we got past it, and what would have
 helped. Everything here we hit ourselves; where something is not yet verified on hardware or
-against Bedrock, it says so.
+against the real services, it says so.
 
 ## Vega OS and the Vega SDK
 
@@ -233,4 +234,5 @@ against Bedrock, it says so.
 2. A way to run and see a Vega app without KVM, and a WebView app on any platform the SDK supports (entries 1 and 1a).
 3. A Bedrock note for anyone proxying Claude's conversations (entry 8).
 4. Short Nova Reel clips returned inline, or each job's exact key (entry 12).
-5. A successor named for each retired Bedrock model, shown where it is called (entry 15).
+5. A successor named for each retired Bedrock model, shown where it is called, and a reason when a
+   new account can't reach Bedrock's models (entry 15).
