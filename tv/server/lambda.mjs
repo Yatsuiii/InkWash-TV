@@ -45,8 +45,8 @@
 //                          counts only) and for pairings with a phone (their words, until the TV
 //                          has them); without it, each copy of the guide keeps its own
 //   GUIDE_COMMONS_SALT     the salt images are hashed with in the commons; keep it secret
-// AWS_REGION is set by Lambda; Claude and Polly are called in that region, and Nova Canvas too unless
-// GUIDE_REAL_REGION says otherwise.
+// AWS_REGION is set by Lambda; Claude on Bedrock and Polly are called in that region, and a Bedrock
+// image model too unless GUIDE_REAL_REGION says otherwise.
 import { timingSafeEqual } from 'node:crypto';
 import { handle, MODELS } from './guide.mjs';
 import { REAL } from './illustrator.mjs';

@@ -7,11 +7,11 @@
 # GuideKey given here as INKWASH_GUIDE_KEY. Then confirm the email AWS sends AlertEmail: until you
 # do, no alert reaches you. What it costs and how it stops: the guide counts what it spends and
 # stops for the day at SpendPerDay (limits.mjs); an AWS Budget emails you as the month's bill
-# grows, and at MonthlyBudget takes the guide's access to Bedrock and Polly away. The TV goes on
-# telling offline either way.
+# grows, and at MonthlyBudget takes the guide's access to Bedrock and Polly away (not Anthropic's API
+# or Gemini: set a spend limit with each). The TV goes on telling offline either way.
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
-Description: Inkwash guide service. Claude on Amazon Bedrock looks at a painting, asks and tells the dream, Amazon Polly speaks, Amazon Nova Canvas makes a told painting real and Amazon Nova Reel sets it moving, and a DynamoDB table counts the images everyone's tellings use, the pictures and clips made each day, and holds a phone's words until the TV has them.
+Description: Inkwash guide service. Claude (through Anthropic's API with an AnthropicKey, or on Amazon Bedrock) looks at a painting, asks and tells the dream, Amazon Polly speaks, Google's Gemini makes a told painting real (with a GeminiKey), and a DynamoDB table counts the images everyone's tellings use, the pictures made each day, and holds a phone's words until the TV has them.
 
 Parameters:
   GuideKey:
@@ -23,12 +23,12 @@ Parameters:
     Type: Number
     Default: 10
     MinValue: 0
-    Description: The most the guide may spend in a day on Bedrock and Polly, in US dollars, counted as it goes at list prices plus 10%. Then it stops until midnight UTC and the TV tells offline.
+    Description: The most the guide may spend in a day on Claude, Polly and pictures, in US dollars, counted as it goes at list prices plus 10% (pictures at PicturePrice). Then it stops until midnight UTC and the TV tells offline.
   MonthlyBudget:
     Type: Number
     Default: 50
     MinValue: 1
-    Description: An AWS Budget for the whole account, in US dollars a month, after any credits. You are emailed at half of it, at 80% and when the month is forecast to go over; at all of it, the guide loses its access to Bedrock and Polly until you reverse the budget's action.
+    Description: An AWS Budget for the whole account, in US dollars a month, after any credits. You are emailed at half of it, at 80% and when the month is forecast to go over; at all of it, the guide loses its access to Bedrock and Polly until you reverse the budget's action. It can't stop Anthropic's or Google's bills, so set limits there too.
   AlertEmail:
     Type: String
     AllowedPattern: '^[^@\s]+@[^@\s]+\.[^@\s]+$'

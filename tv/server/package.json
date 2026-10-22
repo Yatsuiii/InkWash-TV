@@ -2,7 +2,7 @@
   "name": "inkwash-guide",
   "private": true,
   "version": "0.1.0",
-  "description": "The guide service for Inkwash on Fire TV: Claude on Amazon Bedrock looks at the painting, Amazon Polly speaks, Google's Gemini image models make it real.",
+  "description": "The guide service for Inkwash on Fire TV: Claude (through Anthropic's API, or on Amazon Bedrock) looks at the painting, Amazon Polly speaks, Google's Gemini image models make it real.",
   "type": "module",
   "main": "lambda.mjs",
   "scripts": {

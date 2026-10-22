@@ -19,14 +19,15 @@
 //   /thing     { image, name, look, rule, place, young, seed, width, height, reference }  ->  { image,
 //              cut } (or { off } or { blocked }): one thing of their world painted on its own, on
 //              white, from its strokes, as they said it looks (`rule`), or made again from the
-//              picture it had (`reference`); cut out of its white by Nova Canvas if `cut`
+//              picture it had (`reference`); cut out of its white by the image model if `cut`
 //   /world     { image, scene, name, young }  ->  { job } (or { off } or { blocked }): the night's
 //              picture built into a world to walk through, by World Labs; then /world/check { job }
 //              ->  { waiting } until it is built, then { world: { id, splat, scale } }; and
 //              /world/file { id, splat }  ->  { file (base64), type }: the file it walks through
 //   /alive     { image, scene, young, seed }  ->  { job } (or { off } or { blocked }): the night's
-//              picture made real, set moving by Nova Reel, six seconds; then /alive/check { job }
-//              ->  { waiting } until it is made, then { video }: a link to fetch it from
+//              picture made real, set moving by Nova Reel (if the server still has it), six
+//              seconds; then /alive/check { job }  ->  { waiting } until it is made, then
+//              { video }: a link to fetch it from
 //   /pair      {}  ->  { code, expires }: the phone opens <guide>/phone?c=CODE
 //   /heard     { code, since, ask?, end? }  ->  { words: [{ i, text }], next, phone }
 //

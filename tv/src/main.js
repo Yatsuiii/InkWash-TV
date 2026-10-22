@@ -2181,15 +2181,15 @@ async function lightAtlas(A) {
   makeThings(A);
 }
 // Each thing made real on its own (things.js, server/illustrator.mjs `thing`): painted from its
-// strokes as it looks, in the look of their world's place, alone on white; cut out by Nova Canvas,
-// or its white cut away here; kept among their paintings below night 0 (e3 as -3), with what it was
-// made from (its sign), so it is made again only when that changes, and then from the picture it
-// had. A thing new to their world comes to life on its card as
-// the story ends (comeToLife); the rest when their world opens and how it looks is settled
+// strokes as it looks, in the look of their world's place, alone on white; cut out by the image
+// model, or (as with Gemini, which can't) its white cut away here; kept among their paintings below
+// night 0 (e3 as -3), with what it was made from (its sign), so it is made again only when that
+// changes, and then from the picture it had. A thing new to their world comes to life on its card
+// as the story ends (comeToLife); the rest when their world opens and how it looks is settled
 // (makeThings): the ones that come most first, two at a time, as many as the day's pictures allow.
-// One turned down, or that can't be cut out, is kept as that, and not asked for again until what
-// it is made from changes; its strokes stand there instead. With none to be had for now, none is
-// asked for again for a while.
+// One turned down, or that can't be cut out, is kept as that, and not asked for again until what it
+// is made from changes; its strokes stand there instead. With none to be had for now, none is asked
+// for again for a while.
 const THINGS_A_VISIT = 12, THINGS_AT_ONCE = 2, THINGS_KEPT = 16, thingAsked = new Set(), thingImages = new Map();
 let thingsRest = 0;
 const after = (ms) => new Promise((ok) => setTimeout(ok, ms));
@@ -2235,9 +2235,9 @@ function showMade(p, id, it) {
 }
 // One thing of theirs made real on its own, from its `parts` (strokes with their paths) over `box`,
 // as it `look`s and as they said it looks (`rule`), in the look their world's place has now: asked
-// for (made again from the picture it had, if it had one), cut out (by Nova Canvas, or its white cut
-// away here), kept with what it was made from. { it: { canvas, region, box, sign }, fresh } (fresh:
-// made just now), or { it: null }
+// for (made again from the picture it had, if it had one), cut out (by the image model, or its
+// white cut away here), kept with what it was made from.
+// { it: { canvas, region, box, sign }, fresh } (fresh: made just now), or { it: null }
 async function bringToLife(p, c, parts, box, look, rule = c.rule || null) {
   const k = thingKey(c.id), at = `${worldKey(p)}:${c.id}`;
   if (!ai || !ai.thing || k == null || !parts.length || !box) return { it: null };
@@ -2279,7 +2279,7 @@ async function bringToLife(p, c, parts, box, look, rule = c.rule || null) {
     const cv = document.createElement('canvas'); cv.width = R.width; cv.height = R.height;
     const g = cv.getContext('2d');
     g.drawImage(got, 0, 0, R.width, R.height);
-    // cut out by Nova Canvas; or, if it wasn't (or nothing of it was cut away), its white cut away here
+    // cut out by the image model; or, if it wasn't (or nothing was cut away), its white cut here
     let px = g.getImageData(0, 0, R.width, R.height), left = r.cut ? solidOf(px) : 1;
     const here = left > 0.96;
     if (here) { px = cutAway(px); left = px.kept; }
@@ -2296,7 +2296,7 @@ async function bringToLife(p, c, parts, box, look, rule = c.rule || null) {
 }
 // the region a picture was made over, the same as another (to the paper unit)
 const sameRegion = (a, b) => !!a && !!b && a.length === 4 && a.every((v, i) => Math.abs(v - b[i]) < 1);
-// a kept picture of a thing on white, as Nova Canvas takes one to make it again from (no clear pixels)
+// a kept picture of a thing on white, to make it again from (no clear pixels)
 async function onWhite(kept, R) {
   const it = await loadThing(kept);
   if (!it) return null;
@@ -3028,10 +3028,12 @@ function stopGallery() {
 // ---------------------------------------------------------------- it comes alive
 
 // A picture made real can come alive (server/reel.mjs): six seconds of it set moving by Amazon Nova
-// Reel, asked for only when they choose to watch it, once a night. It takes a minute or more, and
-// they may do anything else meanwhile: the choice says it is coming. Once made it is kept with the
-// night's painting, and plays over the picture if it is still showing; and again on a later night,
-// over the picture, when last time's story is heard to the end. Its last frame stays.
+// Reel (retired by AWS on 30 September 2026, so offered only by a server that still has it, which
+// says so with the picture), asked for only when they choose to watch it, once a night. It takes a
+// minute or more, and they may do anything else meanwhile: the choice says it is coming. Once made
+// it is kept with the night's painting, and plays over the picture if it is still showing; and
+// again on a later night, over the picture, when last time's story is heard to the end. Its last
+// frame stays.
 const ALIVE = { say: { ask: 'Watch it come alive', making: 'Coming to life…', done: 'Watch it again' }, every: 5000, most: 6 * 60 * 1000 };
 // each night's, while this page is open: { status: 'making' | 'done' | 'failed', clip }
 const alives = new Map();
@@ -3112,11 +3114,12 @@ function stillAgain() {
 
 // ---------------------------------------------------------------- all around it, and painted again
 
-// What Dream Canvas did with a picture made real, here on the TV and with Amazon Nova Canvas (wide.js):
-// see all around it, the picture widened to either side into a panorama (server/wide.mjs) that the
-// remote looks across; and paint it again in another look (a painting, a picture book, an animated
-// film), each version kept to go back to, the one shown kept with the night. Each is asked for only
-// when chosen, a picture counted with the day's; meanwhile the choice says it is coming.
+// What Dream Canvas did with a picture made real, here on the TV and with the image model
+// (wide.js): see all around it, the picture widened to either side into a panorama
+// (server/wide.mjs) that the remote looks across; and paint it again in another look (a painting, a
+// picture book, an animated film), each version kept to go back to, the one shown kept with the
+// night. Each is asked for only when chosen, a picture counted with the day's; meanwhile the choice
+// says it is coming.
 const WIDE = { say: { ask: 'See all around it', making: 'Looking all around…' } };
 const AGAIN = { say: { ask: 'Paint it again', making: 'Painting it again…' } };
 // the choices for the picture made real tonight, as it stands: shown, or still coming
@@ -3132,8 +3135,8 @@ function pictureChoices(o) {
 // after last time's story, a panorama kept with that night is there to look across again, for free
 const keptWideChoice = (o) => (o && o.after && o.after.pic && o.after.pic.wide ? [WIDE.say.ask] : []);
 // The panorama's sheet, made here: the picture in the middle, its own edges mirrored out to either
-// side for Nova Canvas to start from; and the mask, black where the picture is kept, white where it
-// is painted (a PNG, so only pure black and white)
+// side for the image model to start from; and the mask, black where the picture is kept, white
+// where it is painted (a PNG, so only pure black and white)
 async function wideSheet(url) {
   const im = new Image();
   im.src = url;

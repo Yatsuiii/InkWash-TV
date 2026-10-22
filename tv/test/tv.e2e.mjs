@@ -538,6 +538,8 @@ try {
     assert(playable.said === 'video/webm' && playable.it && !playable.not, JSON.stringify(playable));
     await pressKey('Enter');
     await page.waitForFunction(() => window.__inktv.alive.status === 'making' && window.__inktv.offer.choice === 'Coming to life…', null, { timeout: 5000 });
+    // the choice says so at once; the picture is fitted to Reel's frame before it is sent
+    await until(() => asked.some((a) => a.path === '/alive'), 5000);
     const made = asked.filter((a) => a.path === '/alive');
     assert(made.length === 1 && made[0].image === 'data:image/jpeg;base64,' && made[0].young === false && /ferry|shore|water/i.test(made[0].scene || ''), JSON.stringify(made));
     await page.waitForFunction(() => window.__inktv.alive.status === 'done' && window.__inktv.alive.shown && window.__inktv.alive.playing, null, { timeout: 30000 });

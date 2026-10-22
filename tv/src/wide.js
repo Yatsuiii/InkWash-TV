@@ -1,5 +1,5 @@
 // What Dream Canvas did with a picture made real, on the TV: see all around it (a panorama, the
-// picture widened to either side by Amazon Nova Canvas, server/wide.mjs), and paint it again in
+// picture widened to either side by the image model, server/wide.mjs), and paint it again in
 // another look, keeping each version to go back to. The sheet and its mask are made on the TV
 // (main.js wideSheet) to this layout; the rest is here, pure.
 
@@ -35,7 +35,7 @@ export function panStep({ x = 0.5, v = 1 } = {}, { dt = 0, dir = 0 } = {}) {
   return { x: nx, v: nv };
 }
 // where the panorama sits on a screen `screenW` wide when it is `H` tall: how far left it is moved
-// (one no wider than the screen, which Nova Canvas never sends back, stays in the middle)
+// (one no wider than the screen stays in the middle)
 export const panOffset = (x, { W = SHEET.W, H = SHEET.H, screenW = 1920, screenH = 1080 } = {}) => {
   const shown = (W / H) * screenH;
   if (shown <= screenW) return (screenW - shown) / 2;

@@ -254,6 +254,11 @@ test('the template holds to the code: alarms on the lines the guide logs, its lo
   const { readFileSync } = await import('node:fs');
   const read = (f) => readFileSync(new URL(`../${f}`, import.meta.url), 'utf8');
   const template = read('template.yaml');
+  // a plain YAML value can't hold ": " or " #": one would break the whole template at deploy
+  for (const [, key, value] of template.matchAll(/^\s*(Description|Default): (.*)$/gm)) {
+    if (/^['"|>]/.test(value)) continue;
+    assert.ok(!/: | #/.test(value), `${key} needs quoting or rewording: ${value.slice(0, 80)}`);
+  }
   assert.match(template, /RetentionInDays: 14\n/);
   assert.match(privacyPage(), /for 14 days/);
   // what the alarms look for, and where the guide says it

@@ -2,7 +2,8 @@
 //
 //   node server/dev.mjs            Claude on Amazon Bedrock and Amazon Polly, with your AWS
 //                                  credentials (AWS_REGION, and a profile or keys, as for the
-//                                  AWS CLI)
+//                                  AWS CLI); with GUIDE_ANTHROPIC_KEY, Claude through
+//                                  Anthropic's API, and with GUIDE_GEMINI_KEY, pictures by Gemini
 //   node server/dev.mjs --stand-in no AWS: a stand-in that answers in the right shape
 //   node server/dev.mjs --cli       no AWS: Claude through Claude Code (claude -p), on the Claude
 //                                  subscription it is signed in with (claude-cli.mjs); no voice,

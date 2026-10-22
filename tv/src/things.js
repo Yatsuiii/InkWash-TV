@@ -1,13 +1,14 @@
 // Each thing of their world, made real on its own (server/illustrator.mjs `thing`): what they
-// painted of it, its strokes alone in ink on white, is sent to be painted as the Illustrator said it
-// looks, in the look of their world's place, alone on plain white. Here, the part of the paper it is
-// painted over and the size it is painted at (`regionOf`), its strokes drawn for that (`conditionOf`),
-// and the white cut away so that it can stand in their world (`cutAway`), unless Nova Canvas has cut
-// it out already (`solidOf` says how much of it is left). Then it stands there in
-// place of their strokes, the same size and in the same place (night.js, inside.js).
+// painted of it, its strokes alone in ink on white, is sent to be painted as the Illustrator said
+// it looks, in the look of their world's place, alone on plain white. Here, the part of the paper
+// it is painted over and the size it is painted at (`regionOf`), its strokes drawn for that
+// (`conditionOf`), and the white cut away so that it can stand in their world (`cutAway`), unless
+// the image model has cut it out already (Gemini can't) (`solidOf` says how much of it is left).
+// Then it stands there in place of their strokes, the same size and in the same place (night.js,
+// inside.js).
 
-// paper units are 1600 by 1000; Nova Canvas takes each side 320 to 768 pixels, in sixteens, and at
-// most 4 to 1
+// paper units are 1600 by 1000; a thing is painted at 320 to 768 pixels a side, in sixteens, and at
+// most 4 to 1 (the sizes Nova Canvas took; Gemini paints the nearest shape it has)
 const MIN = 320, MOST = 640, RATIO = 4;
 const sixteen = (v) => Math.max(16, Math.round(v / 16) * 16);
 
@@ -93,8 +94,8 @@ export function cutAway(img, { white = 226, grey = 34, edge = 170 } = {}) {
 // that a picture made before any was said keeps its sign)
 export const signOfThing = ({ strokes = [], look = null, place = null, rule = null }) => JSON.stringify([strokes.map((s) => [s.n, Math.round((s.box || [])[0] || 0), Math.round((s.box || [])[1] || 0)]), look || '', place || '', ...(rule ? [rule] : [])]);
 
-// how much of a picture is the thing, by how clear it is: what Nova Canvas cut out (`img`: { data
-// (RGBA), width, height }), 0 to 1
+// how much of a picture is the thing, by how clear it is: what the image model cut out (`img`: {
+// data (RGBA), width, height }), 0 to 1
 export function solidOf(img, { clear = 16 } = {}) {
   const d = img.data, n = img.width * img.height;
   let kept = 0;
