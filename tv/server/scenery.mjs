@@ -119,17 +119,19 @@ export function checkBackdrop(body) {
   const m = /^data:image\/(jpeg|png);base64,([A-Za-z0-9+/=]+)$/.exec(String(body.image || ''));
   if (!m) throw new BadRequest('image must be the drawn scene, as a JPEG or PNG data URL');
   if (m[2].length > 2_500_000) throw new BadRequest('image is too large');
-  return { scene, image: m[2], young: body.young === true, seed: Math.max(0, Math.min(858993459, Math.round(Number(body.seed) || 0))) };
+  // the things of their world, painted on their own and set into it after: never in the place too
+  const leave = (Array.isArray(body.leave) ? body.leave : []).map((n) => String(n || '').replace(/[^\p{L}\p{N} '’-]/gu, ' ').replace(/\s+/g, ' ').trim().slice(0, 40)).filter(Boolean).slice(0, 12);
+  return { scene, image: m[2], young: body.young === true, seed: Math.max(0, Math.min(858993459, Math.round(Number(body.seed) || 0))), leave };
 }
 
-export function backdropRequest({ scene, image, young = false, seed = 0 }) {
+export function backdropRequest({ scene, image, young = false, seed = 0, leave = [] }) {
   const look = scene.look || (scene.things.style === 'light' ? 'a luminous painted scene' : 'a bright painted world, soft warm light');
   const text = [`${look.replace(/[.\s]+$/, '')}.`, scene.place, 'A wide view across the place itself, from where someone stands at its edge: the horizon across the middle, open empty ground in front, the far distance richly detailed.', young ? GENTLE : ''].filter(Boolean).join(' ');
   return {
     taskType: 'TEXT_IMAGE',
     textToImageParams: {
       text: text.slice(0, BACKDROP.text),
-      negativeText: young ? `${NOT}, ${NOT_FOR_A_CHILD}` : NOT,
+      negativeText: [young ? `${NOT}, ${NOT_FOR_A_CHILD}` : NOT, ...leave.map((n) => n.replace(/^(the|a|an|my|our) /i, ''))].join(', '),
       conditionImage: image,
       controlMode: 'CANNY_EDGE',
       controlStrength: BACKDROP.strength,

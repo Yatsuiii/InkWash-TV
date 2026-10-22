@@ -66,7 +66,7 @@ export function geminiRequest(nova) {
         images: [p.conditionImage],
         prompt: join(
           'This is a rough drawing. Make it into a finished picture of what it shows.',
-          'The drawing is the layout: keep where everything is, how big it is and its shape, and the horizon if it has one. Replace the drawing’s lines and flat colours entirely: no outlines, no scribbles, no text, no labels, no borders.',
+          'The drawing is the layout: keep where everything is, how big it is and its shape, and the horizon if it has one. Add no one and nothing that neither the drawing nor these words have. Replace the drawing’s lines and flat colours entirely: no outlines, no scribbles, no text, no labels, no borders.',
           p.text, avoid(p.negativeText, p.text)),
         ratio,
       };
@@ -77,7 +77,7 @@ export function geminiRequest(nova) {
     const p = n.imageVariationParams || {};
     return {
       images: (p.images || []).slice(0, 1),
-      prompt: join('Paint this same thing again, so it is clearly the very same one, as it is described now.', p.text, avoid(p.negativeText, p.text)),
+      prompt: join('Paint this same thing again, so it is clearly the very same one, as it is described now. Add nothing and no one else.', p.text, avoid(p.negativeText, p.text)),
       ratio,
     };
   }

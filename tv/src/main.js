@@ -2050,7 +2050,7 @@ async function placeOf(A, scene) {
     c.width = W; c.height = H;
     drawSceneAround(c.getContext('2d'), { W, H, horizon: Math.round(STAGE.horizon * (H / STAGE.H)), seed: placeSeed(p), scene, bare: true });
     let r = null;
-    try { r = await ai.backdrop({ scene, image: c.toDataURL('image/jpeg', 0.85), young: !!p.young, seed: realSeed(`place:${p.id}`) }); } catch (err) { console.log(`the place, painted: ${err.message}`); }
+    try { r = await ai.backdrop({ scene, image: c.toDataURL('image/jpeg', 0.85), young: !!p.young, seed: realSeed(`place:${p.id}`), leave: (A.cards || []).filter((x) => !x.visit).map((x) => x.name).slice(0, 12) }); } catch (err) { console.log(`the place, painted: ${err.message}`); }
     if (!r || !r.image) { if (r && r.blocked) console.log('the place, painted: turned down'); return; }
     placeAsked.paint.delete(w);
     // kept as a JPEG at the size the TV draws it from: an image model may send a PNG several times
@@ -2288,7 +2288,7 @@ async function bringToLife(p, c, parts, box, look, rule = c.rule || null) {
     const here = left > 0.96;
     if (here) { px = cutAway(px); left = px.kept; }
     // nothing cut away (it was painted with a place round it), or nothing left: their strokes stay
-    if (left > 0.96 || left < 0.01) { console.log(`a thing, made real: not cut out (${Math.round(left * 100)}% of it kept)`); await failed('uncut'); return { it: null }; }
+    if (left > 0.96 || left < 0.01 || (here && px.boxed)) { console.log(`a thing, made real: not cut out (${Math.round(left * 100)}% of it kept)`); await failed('uncut'); return { it: null }; }
     if (here) g.putImageData(px, 0, 0);
     const image = await new Promise((ok) => cv.toBlob(ok, 'image/png'));
     if (image) await pics.put(k, { image, sign, region: R.region, box, at: Date.now() }).catch((err) => console.log(`a thing, not kept: ${err.message}`));

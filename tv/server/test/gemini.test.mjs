@@ -49,6 +49,11 @@ test('Gemini: each Nova Canvas request read as one for Gemini, in the same words
   const place = geminiRequest(backdropRequest({ scene: { place: 'A shore of black sand.', things: {} }, image: 'UExB', seed: 2 }));
   assert.deepEqual(place.images, ['UExB']);
   assert.match(place.prompt, /A shore of black sand\./);
+  // the things of their world are painted on their own and set into it: never in the place too
+  const bare = geminiRequest(backdropRequest({ scene: { place: 'A moon desert.', things: {} }, image: 'UExB', leave: ['the moon castle', 'the rocket'] }));
+  assert.match(bare.prompt, /Leave out: [^.]*moon castle, rocket\./);
+  // nothing invented: no one and nothing the drawing and the words don't have
+  assert.match(real.prompt, /Add no one and nothing that neither the drawing nor these words have/);
   assert.equal(place.ratio, '16:9');
   // a thing on white, and the same thing made again from its earlier picture
   const t = geminiRequest(thingRequest({ image: 'Rk9Y', name: 'the fox', seed: 4 }));

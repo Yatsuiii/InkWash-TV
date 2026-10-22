@@ -56,9 +56,24 @@ export function conditionOf(parts, R, doc = globalThis.document) {
 // without crossing the thing becomes clear (white inside it, a window or an eye, stays), and the
 // pixels along its edge are eased into the clear, without the white fringe. `img`: { data (RGBA),
 // width, height }, changed in place and returned; with how much of it is the thing (`kept`, 0 to 1).
-export function cutAway(img, { white = 226, grey = 34, edge = 170 } = {}) {
+// The colour a thing was painted on, read from the picture's own edges: the image model may paint
+// it on grey or cream paper, or a wash, rather than white. Null when the edges aren't one colour.
+export function backgroundOf(img, { spread = 30, share = 0.75 } = {}) {
+  const { data: d, width: W, height: H } = img, edge = [];
+  const at = (x, y) => { const i = (y * W + x) * 4; edge.push([d[i], d[i + 1], d[i + 2]]); };
+  for (let x = 0; x < W; x++) { at(x, 0); at(x, H - 1); }
+  for (let y = 1; y < H - 1; y++) { at(0, y); at(W - 1, y); }
+  const mid = [0, 1, 2].map((c) => edge.map((e) => e[c]).sort((a, b) => a - b)[edge.length >> 1]);
+  const near = edge.filter((e) => Math.max(...e.map((v, c) => Math.abs(v - mid[c]))) <= spread).length;
+  return near >= share * edge.length ? mid : null;
+}
+
+export function cutAway(img, { white = 226, grey = 34, edge = 170, near = 30 } = {}) {
   const { data: d, width: W, height: H } = img, n = W * H;
-  const paper = (i) => { const r = d[i * 4], g = d[i * 4 + 1], b = d[i * 4 + 2], lo = Math.min(r, g, b); return lo >= white && Math.max(r, g, b) - lo <= grey; };
+  // what it was painted on: white paper, or the one colour its edges are
+  const bg = backgroundOf(img);
+  const off = (i) => (bg ? Math.max(Math.abs(d[i * 4] - bg[0]), Math.abs(d[i * 4 + 1] - bg[1]), Math.abs(d[i * 4 + 2] - bg[2])) : 255);
+  const paper = (i) => { const r = d[i * 4], g = d[i * 4 + 1], b = d[i * 4 + 2], lo = Math.min(r, g, b); return (lo >= white && Math.max(r, g, b) - lo <= grey) || off(i) <= near; };
   const gone = new Uint8Array(n), queue = new Int32Array(n);
   let head = 0, tail = 0;
   const reach = (i) => { if (!gone[i] && paper(i)) { gone[i] = 1; queue[tail++] = i; } };
@@ -71,21 +86,31 @@ export function cutAway(img, { white = 226, grey = 34, edge = 170 } = {}) {
     if (y > 0) reach(i - W);
     if (y < H - 1) reach(i + W);
   }
-  let kept = 0;
+  let kept = 0, x0 = W, y0 = H, x1 = -1, y1 = -1;
+  const light = !bg || Math.min(...bg) >= white;
   for (let i = 0; i < n; i++) {
     if (gone[i]) { d[i * 4 + 3] = 0; continue; }
     kept++;
     const x = i % W, y = (i / W) | 0;
-    const near = (x > 0 && gone[i - 1]) || (x < W - 1 && gone[i + 1]) || (y > 0 && gone[i - W]) || (y < H - 1 && gone[i + W]);
-    if (!near) continue;
-    // along the edge, as clear as it is light, and its colour as it would be without the white behind
-    const lo = Math.min(d[i * 4], d[i * 4 + 1], d[i * 4 + 2]);
-    if (lo <= edge) continue;
-    const a = Math.max(0.15, (255 - lo) / (255 - edge));
-    for (let c = 0; c < 3; c++) d[i * 4 + c] = Math.max(0, Math.min(255, Math.round((d[i * 4 + c] - 255 * (1 - a)) / a)));
+    if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y;
+    const nearGone = (x > 0 && gone[i - 1]) || (x < W - 1 && gone[i + 1]) || (y > 0 && gone[i - W]) || (y < H - 1 && gone[i + W]);
+    if (!nearGone) continue;
+    // along the edge, as clear as it is like what was behind it, and its colour as it would be
+    // without that behind it
+    let a;
+    if (light) {
+      const lo = Math.min(d[i * 4], d[i * 4 + 1], d[i * 4 + 2]);
+      if (lo <= edge) continue;
+      a = Math.max(0.15, (255 - lo) / (255 - edge));
+    } else a = Math.max(0.15, Math.min(1, off(i) / (near * 3)));
+    if (a >= 1) continue;
+    const under = light ? [255, 255, 255] : bg;
+    for (let c = 0; c < 3; c++) d[i * 4 + c] = Math.max(0, Math.min(255, Math.round((d[i * 4 + c] - under[c] * (1 - a)) / a)));
     d[i * 4 + 3] = Math.round(255 * a);
   }
   img.kept = kept / n;
+  // what is left still fills the picture edge to edge: a box of background came with it, not a thing
+  img.boxed = kept > 0 && x0 <= 1 && y0 <= 1 && x1 >= W - 2 && y1 >= H - 2 && img.kept > 0.5;
   return img;
 }
 

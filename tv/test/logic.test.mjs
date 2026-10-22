@@ -1842,8 +1842,20 @@ test('a thing made real on its own: the part of the paper it is painted over, an
   const fringe = [...Array(W).keys()].map((x) => a(x, 20)).find((v) => v > 0 && v < 255);
   assert.ok(fringe != null, 'its light edge is eased into the clear');
   // painted with a place round it: nothing is cut away
-  const full = cutAway({ data: new Uint8ClampedArray(16 * 4).fill(90).map((v, i) => (i % 4 === 3 ? 255 : v)), width: 4, height: 4 });
+  const placed = new Uint8ClampedArray(16 * 16 * 4).map((v, i) => (i % 4 === 3 ? 255 : (i * 37) % 200));
+  const full = cutAway({ data: placed, width: 16, height: 16 });
   assert.equal(full.kept, 1);
+  // painted on grey paper, not white (as the image model may): the paper is still cut away, from
+  // the colour of the picture's own edges, and the ball kept whole
+  const paper = new Uint8ClampedArray(W * H * 4).map((v, i) => (i % 4 === 3 ? 255 : 120));
+  for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) if (Math.hypot(x - 20, y - 20) < 10) { const i = (y * W + x) * 4; paper[i] = 200; paper[i + 1] = 30; paper[i + 2] = 30; }
+  const grey = cutAway({ data: paper, width: W, height: H });
+  assert.equal(grey.data[3], 0, 'the grey paper round it is clear');
+  assert.equal(grey.data[(20 * W + 20) * 4 + 3], 255, 'the ball is kept');
+  assert.ok(grey.kept > 0.15 && grey.kept < 0.3 && !grey.boxed, `${grey.kept}`);
+  // a thing in a box of its own background (edges of no one colour): seen for what it is, not stood
+  const boxed = new Uint8ClampedArray(W * H * 4).map((v, i) => (i % 4 === 3 ? 255 : (i * 53) % 180));
+  assert.equal(cutAway({ data: boxed, width: W, height: H }).boxed, true);
 
   // it is made again only when what it is made from changes
   const s = { strokes: [{ n: 3, box: [700, 200, 800, 700] }], look: 'A red lighthouse.', place: 'A bright 3D game.' };
