@@ -29,7 +29,8 @@ import { createPhone, qrSvg } from './phone.js';
 import { runGuide, stepOf } from './agent.js';
 import { SHEET as PANORAMA, nextLook, LOOK_NAMES, versionLabel, isVersionLabel, panStep, panOffset, MORE, foldChoices } from './wide.js';
 import { createTools, firstMessage, laterMessage, briefFor, createRenderer, finalTelling } from './harness.js';
-import { createPaintings, createNights, createWorlds, PLACE } from './paintings.js';
+import { createPaintings, createNights, createWorlds, PLACE, COMPOSED } from './paintings.js';
+import { composeSign, composeDue, COMPOSE_AT } from './compose.js';
 import { regionOf, conditionOf, cutAway, solidOf, signOfThing } from './things.js';
 import { createInside } from './inside.js';
 import { loadFamily, saveFamily, addPainter, choose, freeSeals, sealOf, sealSvg, worldKey, paintingsKey, describe, demoFamily } from './family.js';
@@ -2381,6 +2382,48 @@ function placeLights(A) {
   A.hello = A.hello || new Set();
   const hello = A.night.state.things.filter((t) => !A.hello.has(t.id)).sort((a, b) => a.foot[0] - b.foot[0]);
   hello.forEach((t, i) => { A.hello.add(t.id); setTimeout(() => { if (state.atlas === A && A.night && !A.walk) A.night.greet(t.id); }, 300 + i * 150); });
+  composeSoon(A);
+}
+// Their world painted as one (compose.js): once home has been still a moment, with its place
+// painted and two or more things made real in it, what is on screen is sent to be repainted as one
+// picture, kept, and shown over the place instead of the things laid on it
+const composeAsked = new Set();
+function composeSoon(A) {
+  clearTimeout(A.composeTimer);
+  A.composeTimer = setTimeout(() => composeNow(A).catch((err) => console.log(`painted as one: ${err.message}`)), COMPOSE_AT.still * 1000 + 600);
+}
+function composeSignOf(A) {
+  const seen = placeImages.get(worldKey(A.p));
+  const made = A.night ? A.night.state.things.filter((t) => t.made) : [];
+  return { sign: composeSign({ place: A.night && A.night.painted && seen ? seen.sign : null, things: made.map((t) => ({ id: t.id, sign: A.art.get(t.id) && A.art.get(t.id).sprite && A.art.get(t.id).sprite.sign })) }), made: made.length, making: A.night ? A.night.state.things.some((t) => t.making) : false };
+}
+async function composeNow(A) {
+  if (state.atlas !== A || !A.night || A.walk || state.mode !== 'atlas') return;
+  const p = A.p, pics = createPaintings(undefined, paintingsKey(p)), w = worldKey(p);
+  const { sign, made, making } = composeSignOf(A);
+  const kept = await pics.get(COMPOSED).catch(() => null);
+  const asked = new Set([...composeAsked].filter((k) => k.startsWith(`${w}|`)).map((k) => k.slice(w.length + 1)));
+  const due = composeDue({ sign, painted: A.night.painted, made, making, kept: kept && kept.image ? kept.sign : null, shown: A.composed || null, asked });
+  if (due === 'drop') { A.composed = null; A.night.setComposed(null); return composeSoon(A); }
+  if (due === 'use') return showComposed(A, kept.image, sign);
+  if (due !== 'ask' || !ai || !ai.compose) return;
+  const view = A.night.snapshot({ W: 1536, H: 864 });
+  if (!view) return;
+  composeAsked.add(`${w}|${sign}`);
+  let r = null;
+  try { r = await ai.compose({ scene: world.scene, image: view.toDataURL('image/jpeg', 0.85), young: !!p.young, seed: realSeed(`one:${p.id}:${sign}`) }); } catch (err) { console.log(`painted as one: ${err.message}`); }
+  if (!r || !r.image) { if (r && r.blocked) console.log('painted as one: turned down'); return; }
+  const keep = await asJpeg(r.image, 1536, 0.88).catch(() => r.image);
+  await pics.put(COMPOSED, { image: keep, sign, at: Date.now() }).catch((err) => console.log(`painted as one, not kept: ${err.message}`));
+  // still the same world, as it was when it was asked for
+  if (state.atlas === A && composeSignOf(A).sign === sign) return showComposed(A, keep, sign);
+}
+async function showComposed(A, url, sign) {
+  const img = new Image(); img.src = url;
+  await img.decode();
+  if (state.atlas !== A || !A.night || composeSignOf(A).sign !== sign) return;
+  A.night.setComposed(img);
+  A.composed = sign;
 }
 // a thing as its night was made real, for its card
 async function realPortrait(pic, ns) {
@@ -4158,7 +4201,7 @@ window.__inktv = {
   get previously() { const el = $('#previously'); return el.hidden ? null : { kicker: el.querySelector('.kicker').textContent, title: el.querySelector('.title').textContent, night: el.querySelector('.night').textContent, reel: [...el.querySelectorAll('figcaption')].map((x) => x.textContent) }; },
   // the cards that flew in for what the last night kept; the ones on screen now
   get collected() { return { last: state.collected || null, showing: [...document.querySelectorAll('#collected .card .name')].map((x) => x.textContent) }; },
-  get atlas() { const A = state.atlas; return A && { id: A.id, title: $('#atlas h2') ? $('#atlas h2').textContent : null, about: $('#atlas header p') ? $('#atlas header p').textContent : null, things: (A.cards || []).map((c) => c.name), i: A.i, card: $('#atlas .side .name') ? $('#atlas .side .name').textContent : null, pictures: [...A.art.values()].filter(Boolean).length, real: [...A.art.values()].filter((a) => a && a.real).length, made: [...A.art.values()].filter((a) => a && a.sprite).length, inTheirWords: [...A.art.values()].filter((a) => a && a.sprite && ruleOfSign(a.sprite.sign)).length, came: A.came || 0, making: A.night ? A.night.state.things.filter((t) => t.making).length : 0, hops: A.night ? Object.fromEntries(A.night.state.things.map((t) => [t.id, t.hops])) : {}, nodes: A.map ? A.map.nodes.map((n) => ({ name: n.name, x: n.x, y: n.y, r: n.r })) : [], actions: shownActions(A).map((a) => a.text), all: worldActions(A).map((a) => a.text), k: A.look ? A.look.k : A.forget ? A.forget.k : A.said ? A.said.k : A.wonder ? A.wonder.k : A.k, said: A.said ? { name: A.said.name, question: A.said.question } : null, rule: ((A.cards || [])[A.i] || {}).rule || null, quiet: document.body.classList.contains('quiet'), visiting: (A.cards || []).filter((c) => c.visit).map((c) => c.name), where: whereOf(A, (A.cards || [])[A.i]) }; },
+  get atlas() { const A = state.atlas; return A && { id: A.id, title: $('#atlas h2') ? $('#atlas h2').textContent : null, about: $('#atlas header p') ? $('#atlas header p').textContent : null, things: (A.cards || []).map((c) => c.name), i: A.i, card: $('#atlas .side .name') ? $('#atlas .side .name').textContent : null, pictures: [...A.art.values()].filter(Boolean).length, real: [...A.art.values()].filter((a) => a && a.real).length, made: [...A.art.values()].filter((a) => a && a.sprite).length, inTheirWords: [...A.art.values()].filter((a) => a && a.sprite && ruleOfSign(a.sprite.sign)).length, came: A.came || 0, composed: !!(A.night && A.night.composed), making: A.night ? A.night.state.things.filter((t) => t.making).length : 0, hops: A.night ? Object.fromEntries(A.night.state.things.map((t) => [t.id, t.hops])) : {}, nodes: A.map ? A.map.nodes.map((n) => ({ name: n.name, x: n.x, y: n.y, r: n.r })) : [], actions: shownActions(A).map((a) => a.text), all: worldActions(A).map((a) => a.text), k: A.look ? A.look.k : A.forget ? A.forget.k : A.said ? A.said.k : A.wonder ? A.wonder.k : A.k, said: A.said ? { name: A.said.name, question: A.said.question } : null, rule: ((A.cards || [])[A.i] || {}).rule || null, quiet: document.body.classList.contains('quiet'), visiting: (A.cards || []).filter((c) => c.visit).map((c) => c.name), where: whereOf(A, (A.cards || [])[A.i]) }; },
   get about() { return state.about || null; },
   // for the tests: how long their world is left alone before its words fade (ms; Infinity: never)
   set quietAfter(ms) { QUIET = ms; },

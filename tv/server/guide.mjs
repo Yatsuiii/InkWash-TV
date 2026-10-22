@@ -70,7 +70,7 @@ import { world, worldCheck, worldFile } from './marble.mjs';
 import { BadRequest } from './errors.mjs';
 import { real, thing } from './illustrator.mjs';
 import { wide } from './wide.mjs';
-import { scenery, backdrop } from './scenery.mjs';
+import { scenery, backdrop, compose } from './scenery.mjs';
 
 export const MODELS = {
   // a remark has to come back while the painter is still pausing: the fast model. It also offers
@@ -522,6 +522,7 @@ export async function handle(path, body, { claude, speak = async () => null, pai
     }
     if (path === '/scene') return await scenery(body, { claude, model: models.scene || models.remark, log });
     if (path === '/backdrop') return await backdrop(body, { paint, budget, log });
+    if (path === '/compose') return await compose(body, { paint, budget, log });
     if (path === '/thing') return await thing(body, { paint, budget, log, cutout });
     if (path === '/wide') return await wide(body, { paint, budget, log });
     if (path === '/alive') return await alive(body, { reel, budget: clips, log });

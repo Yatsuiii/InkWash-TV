@@ -1186,6 +1186,14 @@ try {
     assert((await tv(() => window.__inktv.atlas.came)) === 4, 'each came to life while Moon looked');
     await wait(1200);
     await shot('tv-15-hear-it-again.png');
+    // still a moment, Moon's world is painted as one: what is on screen sent once, a JPEG, and the
+    // painting that comes back shown over the place in place of the things laid on it
+    await page.waitForFunction(() => window.__inktv.atlas && window.__inktv.atlas.composed, null, { timeout: 20000 });
+    const ones = asked.filter((a) => a.path === '/compose');
+    assert(ones.length === 1 && /^data:image\/jpeg;base64,/.test(ones[0].image) && ones[0].scene && ones[0].young === false, JSON.stringify(ones));
+    const moonScene = JSON.stringify(ones[0].scene);
+    await wait(1700);
+    await shot('tv-15a-painted-as-one.png');
     const things = asked.filter((a) => a.path === '/thing' && ['the pier', 'the lantern', 'the bridge'].includes(a.name));
     assert(things.length === 3 && things.every((a) => a.young === false && /^data:image\/png;base64,/.test(a.image) && a.width % 16 === 0 && a.height % 16 === 0 && Math.max(a.width, a.height) === 640), JSON.stringify(things));
     // told as night 3 kept it, over its painting, each line lit; no model is asked
@@ -1248,6 +1256,9 @@ try {
     assert(/Heard again once\.\s*$/.test(told[2]) && told.slice(0, 2).every((t) => !/Heard again/.test(t)), JSON.stringify(told));
     await pressKey('Escape');
     await page.waitForFunction(() => window.__inktv.mode === 'atlas', null, { timeout: 5000 });
+    // back in their world: painted as one again from what was kept, and not asked for again
+    await page.waitForFunction(() => window.__inktv.atlas && window.__inktv.atlas.composed, null, { timeout: 15000 });
+    assert(asked.filter((a) => a.path === '/compose' && JSON.stringify(a.scene) === moonScene).length === 1, 'asked for once');
     await pressKey('Escape');
     assert((await tv(() => window.__inktv.mode)) === 'who', 'back to the seals');
     // the TV's own family and worlds are as they were; the demo's paintings are there to look back at

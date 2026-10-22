@@ -51,6 +51,16 @@ export function geminiRequest(nova) {
   const ratio = cfg.width && cfg.height ? ratioOf(cfg.width, cfg.height) : null;
   if (n.taskType === 'TEXT_IMAGE') {
     const p = n.textToImageParams || {};
+    if (p.conditionImage && n.intent === 'compose') {
+      return {
+        images: [p.conditionImage],
+        prompt: join(
+          'This is a picture of a place with things set into it, roughly.',
+          'Repaint it as one finished painting: keep the place, and keep every thing where it is and about how big it is, but give them all the same light, colours, shadows and painting style, standing on the ground or in the air as they would, so they belong in the place, not pasted on. No text, no borders.',
+          p.text, avoid(p.negativeText, p.text)),
+        ratio: '16:9',
+      };
+    }
     if (p.conditionImage) {
       return {
         images: [p.conditionImage],

@@ -69,7 +69,7 @@ const CORS = {
 // what the phone may call without the TV's key: its page, and saying and listening by code
 const PHONE_CALLS = new Set(['/words', '/asked']);
 // what costs money: a model, a voice or a picture
-const PAID = new Set(['/remark', '/readings', '/tell', '/agent', '/wonder', '/real', '/speak', '/scene', '/backdrop', '/thing', '/wide', '/alive', '/world']);
+const PAID = new Set(['/remark', '/readings', '/tell', '/agent', '/wonder', '/real', '/speak', '/scene', '/backdrop', '/compose', '/thing', '/wide', '/alive', '/world']);
 // pictures by Gemini: a key is set, and pictures aren't off
 const byGemini = () => process.env.GUIDE_REAL !== 'off' && !!process.env.GUIDE_GEMINI_KEY;
 // Claude through Anthropic's own API: a key is set
@@ -124,7 +124,9 @@ async function realClients() {
     const { BedrockRuntimeClient, InvokeModelCommand } = await import('@aws-sdk/client-bedrock-runtime');
     const canvas = new BedrockRuntimeClient({ region: process.env.GUIDE_REAL_REGION || region });
     paint = async (body) => {
-      const out = await canvas.send(new InvokeModelCommand({ modelId: process.env.GUIDE_REAL_MODEL || REAL.model, contentType: 'application/json', accept: 'application/json', body: JSON.stringify(body) }));
+      // what Gemini is told the picture is for (gemini.mjs) is not Nova Canvas's to read
+      const { intent, ...nova } = body || {};
+      const out = await canvas.send(new InvokeModelCommand({ modelId: process.env.GUIDE_REAL_MODEL || REAL.model, contentType: 'application/json', accept: 'application/json', body: JSON.stringify(nova) }));
       const json = JSON.parse(new TextDecoder().decode(out.body));
       if (json.error) throw new Error(json.error);
       return json.images && json.images[0];

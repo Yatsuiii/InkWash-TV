@@ -407,6 +407,8 @@ export function sparksEl({ at = 0, doc = globalThis.document } = {}) {
 // ground and comes down (its sounds are struck there)
 export const HOP = { s: 0.72, takeoff: 0.16, land: 0.8 };
 const HOP_S = HOP.s;
+// their world painted as one, fading in over the place (compose.js)
+const COMPOSE_FADE = 1.5;
 export function hopOf(u) {
   if (!(u > 0) || u >= 1) return { lift: 0, sx: 1, sy: 1 };
   const { takeoff, land } = HOP;
@@ -459,6 +461,9 @@ export function createNightWorld(host, { seed = 5, S = STAGE, scene = null, back
   host.append(layer);
   const things = new Map(), makingNow = new Set(), hops = new Map();
   let chosen = null, born = null, last = null, drawnAt = null, links = [], backT = null, walker = null, backWas = null;
+  // their world painted as one (compose.js), over the place, and the things made real in it no longer
+  // laid on top: faded in over `COMPOSE_FADE` seconds from `composedAt`
+  let composedT = null, composedAt = null;
 
   // the paths of light between the things that came on the same night, over the night: drawn again
   // only when where they run changes (the night is the size of the stage, and copying and sending
@@ -598,10 +603,20 @@ export function createNightWorld(host, { seed = 5, S = STAGE, scene = null, back
     G.attach(host, { before: layer, scale });
     G.begin({ W: S.W, H: S.H });
     G.quad(backT, [[0, 0], [S.W, 0], [0, S.H], [S.W, S.H]], { opaque: true });
+    // their world painted as one, coming in over the place and what was laid on it
+    let one = 0;
+    if (composedT) {
+      if (composedAt == null) composedAt = now;
+      one = clamp((now - composedAt) / COMPOSE_FADE, 0, 1);
+      G.quad(composedT, [[0, 0], [S.W, 0], [0, S.H], [S.W, S.H]], { alpha: one, over: true });
+    }
     // solid things are laid far to near, each over what is behind it; light just adds up
     const list = [...things.values()].filter((th) => th.L);
     if (!night || list.some((th) => th.L.toy)) list.sort((a, b) => a.foot[1] - b.foot[1]);
     for (const th of list) {
+      // in the painting as one, a thing made real is in the picture itself: what was laid on goes
+      const inIt = one > 0 && th.key.startsWith('made:');
+      if (inIt && one >= 1) continue;
       const on = th.id === chosen, solid = !!th.L.toy;
       th.a += ((on || solid ? 1 : 0.74) - th.a) * (1 - Math.exp(-dt / 0.25));
       const q = poseOf(th.motion, now - born + th.phase, on ? 1 : 0.55, { size: th.size });
@@ -613,10 +628,10 @@ export function createNightWorld(host, { seed = 5, S = STAGE, scene = null, back
       // greeted: it hops, stretched as it leaves the ground and squashed as it lands
       if (th.hop === true) th.hop = now;
       if (typeof th.hop === 'number' && now - th.hop < HOP_S) at = hopped(at, [th.foot[0], y + h - th.pad], (now - th.hop) / HOP_S, hopHeight(h - th.pad));
-      if (solid) shadowOf(th, at);
-      if (reflect > 0 && mirrored(th) > 0) G.quad(th.L, at.map(([cx, cy]) => [cx, 2 * th.foot[1] - cy]), { alpha: th.a * reflect * mirrored(th), soft: true, over: solid });
+      if (solid && !inIt) shadowOf(th, at);
+      if (reflect > 0 && !inIt && mirrored(th) > 0) G.quad(th.L, at.map(([cx, cy]) => [cx, 2 * th.foot[1] - cy]), { alpha: th.a * reflect * mirrored(th), soft: true, over: solid });
       // still being made: its ink breathes, waiting
-      const a = th.making ? th.a * (0.7 + 0.3 * Math.sin(now * 4.2 + th.phase)) : th.a;
+      const a = (th.making ? th.a * (0.7 + 0.3 * Math.sin(now * 4.2 + th.phase)) : th.a) * (inIt ? 1 - one : 1);
       G.quad(th.L, at, { alpha: a, over: solid });
     }
     G.end({ clear: [0, 0, 0, 1] });
@@ -825,8 +840,8 @@ export function createNightWorld(host, { seed = 5, S = STAGE, scene = null, back
 
   function clear() {
     walkEnd();
-    if (G) { for (const th of things.values()) G.freeLight(th.L); G.free(backT); }
-    things.clear(); backT = null;
+    if (G) { for (const th of things.values()) G.freeLight(th.L); G.free(backT); if (composedT) G.free(composedT); }
+    things.clear(); backT = null; composedT = null;
     host.innerHTML = '';
     if (world === api) world = null;
   }
@@ -838,6 +853,29 @@ export function createNightWorld(host, { seed = 5, S = STAGE, scene = null, back
     backWas = null;
     drawBack();
     drawnAt = null;
+    return true;
+  }
+  // The world as it is on screen, without the names over it, for it to be painted as one
+  // (compose.js): a frame drawn now and copied before the page shows it, `W` x `H`; null without a
+  // GPU, on a walk, or with the painting as one already over it
+  function snapshot({ W = 1536, H = 864 } = {}) {
+    if (!G || !backT || walker || composedT) return null;
+    drawnAt = null;
+    frame(last == null ? 0 : last + 1 / 30);
+    const c = canvasOf(W, H);
+    c.getContext('2d').drawImage(G.canvas, 0, 0, W, H);
+    return c;
+  }
+  // their world painted as one, over the place (it fades in); null takes it away again
+  function setComposed(img) {
+    if (!G) return false;
+    if (composedT) { G.free(composedT); composedT = null; }
+    composedAt = null;
+    drawnAt = null;
+    if (!img) return true;
+    const c = canvasOf(S.W, S.H);
+    c.getContext('2d').drawImage(img, 0, 0, S.W, S.H);
+    composedT = G.upload(c);
     return true;
   }
   // a thing greeted: it hops where it stands (the next frame starts it)
@@ -857,8 +895,9 @@ export function createNightWorld(host, { seed = 5, S = STAGE, scene = null, back
     drawnAt = null;
   }
   const api = {
-    set, choose, frame, clear, walkStart, walkPress, walkEnd, setBackdrop, making, greet,
+    set, choose, frame, clear, walkStart, walkPress, walkEnd, setBackdrop, making, greet, snapshot, setComposed,
     get painted() { return painted; },
+    get composed() { return !!composedT; },
     get walking() { return !!walker; },
     // whether it can be walked through: drawn on the GPU
     get canWalk() { return !!G; },

@@ -10,7 +10,7 @@
 //   const r = await once.run(path, body, () => handle(path, body, ...));   // { status, json }
 import { createHash } from 'node:crypto';
 
-export const ONCE = { ttl: 10 * 60 * 1000, most: 16, paths: ['/real', '/thing', '/backdrop', '/wide', '/world', '/alive', '/scene'] };
+export const ONCE = { ttl: 10 * 60 * 1000, most: 16, paths: ['/real', '/thing', '/backdrop', '/compose', '/wide', '/world', '/alive', '/scene'] };
 
 // an answer worth keeping: made, not turned down, not one there was none of today
 const made = (r) => r && r.status === 200 && r.json && typeof r.json === 'object' && !r.json.error && !r.json.off && !r.json.blocked && !r.json.today;

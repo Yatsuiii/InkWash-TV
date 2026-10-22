@@ -192,3 +192,38 @@ test('the night made real: their own words for a thing come first in what it is 
   assert.ok(text.indexOf('The fox: the fox has a white tip on its tail.') < text.indexOf('The night ferry: a small red wooden ferry.'), text);
   assert.match(text, /The pier: the pier is broken in the middle; a long grey pier\./);
 });
+
+import { compose, composeRequest, COMPOSE } from '../scenery.mjs';
+import { geminiRequest } from '../gemini.mjs';
+
+test('their world painted as one: the TV\'s view of it repainted together, so its things belong in the place', async () => {
+  const scene = checkScene({ ...SCENE, look: 'A soft watercolour storybook.' });
+  const view = `data:image/jpeg;base64,${Buffer.from('the world as the TV shows it').toString('base64')}`;
+  const sent = [];
+  const paint = async (b) => { sent.push(b); return standInPaint(); };
+  const r = await compose({ scene, image: view, seed: 3 }, { paint });
+  assert.match(r.json.image, /^data:image\/png;base64,iVBOR/);
+  const b = sent[0];
+  assert.deepEqual([b.taskType, b.intent, b.textToImageParams.conditionImage, b.imageGenerationConfig.width, b.imageGenerationConfig.height], ['TEXT_IMAGE', 'compose', view.split(',')[1], 1536, 864]);
+  assert.ok(b.textToImageParams.text.startsWith('A soft watercolour storybook.'));
+  assert.ok(!/people, person, figure, character, animal/.test(b.textToImageParams.negativeText), 'its creatures are its things: never left out');
+  // Gemini is told what it is: not a rough drawing, but a place with things set in, to repaint as one
+  const g = geminiRequest(b);
+  assert.equal(g.ratio, '16:9');
+  assert.match(g.prompt, /^This is a picture of a place with things set into it, roughly\./);
+  assert.match(g.prompt, /keep every thing where it is and about how big it is/);
+  assert.match(g.prompt, /so they belong in the place, not pasted on/);
+  assert.ok(!/rough drawing/.test(g.prompt));
+  // a child's: gentle
+  const kid = composeRequest({ scene, image: 'x', young: true });
+  assert.ok(kid.textToImageParams.text.endsWith('for a young child.') && /scary/.test(kid.textToImageParams.negativeText));
+  // none set up, none left today, too big to send, turned down, nonsense (a PNG is not the TV's view)
+  assert.deepEqual((await compose({ scene, image: view }, {})).json, { off: true });
+  const budget = memoryBudget({ perDay: 1 });
+  await compose({ scene, image: view }, { paint, budget });
+  assert.deepEqual((await compose({ scene, image: view }, { paint, budget })).json, { off: true, today: true });
+  assert.deepEqual((await compose({ scene, image: view }, { paint: async () => 'A'.repeat(COMPOSE.most + 4), log: () => {} })).json, { off: true, big: true });
+  assert.deepEqual((await compose({ scene, image: view }, { paint: async () => { throw new Error('This request has been blocked by our content filters.'); }, log: () => {} })).json, { blocked: true });
+  for (const bad of [{ scene, image: 'nope' }, { scene, image: view.replace('jpeg', 'png') }, { scene, image: `data:image/jpeg;base64,${'A'.repeat(COMPOSE.image + 4)}` }, null]) assert.equal((await handle('/compose', bad, { claude: said(['{}']), paint })).status, 400);
+  assert.match((await handle('/compose', { scene, image: view }, { claude: said(['{}']), paint })).json.image, /^data:image\/png/);
+});

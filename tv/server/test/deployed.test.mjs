@@ -159,6 +159,10 @@ test('deployed: the night made real, its place, a thing on white, a panorama, al
   const place = await call('/backdrop', { scene, image: `data:image/jpeg;base64,${Buffer.from('the drawn place').toString('base64')}`, seed: 2 });
   assert.equal(place.status, 200, JSON.stringify(place.json));
   assert.deepEqual(shape(place.json.image.split(',')[1]), [160, 90], '16:9, as the TV drew it');
+  // and their world painted as one, from the TV's view of it
+  const one = await call('/compose', { scene, image: `data:image/jpeg;base64,${Buffer.from('the world as the TV shows it').toString('base64')}`, seed: 2 });
+  assert.equal(one.status, 200, JSON.stringify(one.json));
+  assert.deepEqual(shape(one.json.image.split(',')[1]), [160, 90], '16:9, as the TV shows it');
   const thing = await call('/thing', { image: IMAGE, name: 'the night ferry', look: 'a small red wooden ferry', width: 400, height: 320 });
   assert.equal(thing.status, 200, JSON.stringify(thing.json));
   assert.equal(thing.json.cut, undefined, 'Gemini can\'t cut it out: the TV does');

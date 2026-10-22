@@ -2184,3 +2184,25 @@ test('what happens next, on one row: past five choices the picture\'s own fold u
   assert.deepEqual(foldChoices(row, [], { open: true }), { choices: row, folded: false }, 'nothing to open');
   assert.equal(MORE, 'More…');
 });
+
+import { composeSign, composeDue, COMPOSE_AT } from '../src/compose.js';
+
+test('their world painted as one: asked for once per sign of what it is made from, used when kept, dropped when the world has changed', () => {
+  const two = [{ id: 'e1', sign: 'a' }, { id: 'e2', sign: 'b' }];
+  const sign = composeSign({ place: 'P', things: two });
+  assert.equal(sign, composeSign({ place: 'P', things: [...two].reverse() }), 'in any order, the same');
+  assert.notEqual(sign, composeSign({ place: 'P', things: [{ id: 'e1', sign: 'a2' }, two[1]] }), 'a thing made again is a new sign');
+  assert.notEqual(sign, composeSign({ place: 'P2', things: two }), 'and so is a new look');
+  assert.equal(composeSign({ place: null, things: two }), null, 'no painted place, nothing to paint as one');
+  assert.equal(composeSign({ place: 'P', things: [{ id: 'e1', sign: null }] }), null);
+  const base = { sign, painted: true, made: 2 };
+  assert.equal(composeDue(base), 'ask');
+  assert.equal(composeDue({ ...base, kept: sign }), 'use', 'kept from just this: no asking again');
+  assert.equal(composeDue({ ...base, kept: 'old' }), 'ask', 'kept from something else: asked for anew');
+  assert.equal(composeDue({ ...base, asked: new Set([sign]) }), null, 'never twice in a sitting');
+  assert.equal(composeDue({ ...base, making: true }), null, 'not while a thing is still being made');
+  assert.equal(composeDue({ ...base, made: COMPOSE_AT.things - 1 }), null);
+  assert.equal(composeDue({ ...base, painted: false }), null);
+  assert.equal(composeDue({ ...base, shown: sign }), null, 'already on screen');
+  assert.equal(composeDue({ ...base, shown: 'old' }), 'drop', 'on screen from before the world changed: taken away');
+});

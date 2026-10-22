@@ -5,7 +5,7 @@
 // the clip it came alive in, its panorama and the world built from it), and the thing's own picture.
 // Nothing about it is sent anywhere.
 import { scrubNight } from './engine/dreams/forget.mjs';
-import { PLACE } from './paintings.js';
+import { PLACE, COMPOSED } from './paintings.js';
 
 // `archive`: the chapters kept apart (paintings.js createNights); `pics`: the drawings and pictures
 // (createPaintings), with the thing's own picture at `pictureKey(id)`; `erase(image, strokes)`: a
@@ -34,6 +34,8 @@ export async function forgetHere(world, id, { archive = null, pics = null, erase
     if (k != null && pics.drop) await pics.drop(k).catch(() => {});
     // the place, painted from words that named it
     if (plan.place && pics.drop) await pics.drop(PLACE).catch(() => {});
+    // and their world painted as one, which had it in it
+    if (pics.drop) await pics.drop(COMPOSED).catch(() => {});
   }
   return r;
 }

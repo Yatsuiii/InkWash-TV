@@ -23,7 +23,7 @@ test('never paid twice: the same paid request asked again is answered with the f
   await once.run('/remark', { image: 'x' }, make);
   await once.run('/remark', { image: 'x' }, make);
   assert.equal(made, 4);
-  assert.deepEqual(ONCE.paths, ['/real', '/thing', '/backdrop', '/wide', '/world', '/alive', '/scene']);
+  assert.deepEqual(ONCE.paths, ['/real', '/thing', '/backdrop', '/compose', '/wide', '/world', '/alive', '/scene']);
 });
 
 test('never paid twice: only what was made is kept, for ten minutes, the oldest let go first', async () => {

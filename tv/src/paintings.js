@@ -13,6 +13,8 @@ const DB = 'inkwash', VERSION = 2, STORES = ['paintings', 'nights', 'worlds'];
 // Where a painter's world stands, painted (main.js placeOf): kept among their paintings as night 0,
 // which no night is: { image, sign, at }
 export const PLACE = 0;
+// their world painted as one (compose.js), kept as night -1, which no night is either: { image, sign, at }
+export const COMPOSED = -1;
 
 // one connection for all three, opened once
 const opened = new WeakMap();

@@ -138,6 +138,37 @@ export function backdropRequest({ scene, image, young = false, seed = 0 }) {
   };
 }
 
+// The world painted as one: the TV's own view of their world (its place, each thing made real set
+// into it where it stands), repainted as one picture, so the things belong in the place instead of
+// sitting on it. `intent: 'compose'` tells gemini.mjs to say so; Bedrock's model is sent the body
+// without it (lambda.mjs). Counted with the day's pictures.
+export const COMPOSE = { width: 1536, height: 864, strength: 0.6, cfg: 7, text: 1024, image: 2_500_000, most: 5_400_000 };
+export function checkCompose(body) {
+  if (!body || typeof body !== 'object') throw new BadRequest('expected { scene, image, young, seed }');
+  const scene = checkScene(body.scene);
+  if (!scene) throw new BadRequest('scene must be one the TV can draw');
+  const m = /^data:image\/jpeg;base64,([A-Za-z0-9+/=]+)$/.exec(String(body.image || ''));
+  if (!m) throw new BadRequest('image must be the world as the TV shows it, a JPEG data URL');
+  if (m[1].length > COMPOSE.image) throw new BadRequest('image is too large');
+  return { scene, image: m[1], young: body.young === true, seed: Math.max(0, Math.min(858993459, Math.round(Number(body.seed) || 0))) };
+}
+export function composeRequest({ scene, image, young = false, seed = 0 }) {
+  const look = scene.look || (scene.things.style === 'light' ? 'a luminous painted scene' : 'a bright painted world, soft warm light');
+  const text = [`${look.replace(/[.\s]+$/, '')}.`, scene.place, young ? GENTLE : ''].filter(Boolean).join(' ');
+  return {
+    taskType: 'TEXT_IMAGE',
+    intent: 'compose',
+    textToImageParams: {
+      text: text.slice(0, COMPOSE.text),
+      negativeText: young ? `text, letters, words, watermark, frame, border, ${NOT_FOR_A_CHILD}` : 'text, letters, words, watermark, logo, signature, frame, border, blurry, distorted',
+      conditionImage: image,
+      controlMode: 'CANNY_EDGE',
+      controlStrength: COMPOSE.strength,
+    },
+    imageGenerationConfig: { numberOfImages: 1, width: COMPOSE.width, height: COMPOSE.height, quality: 'standard', cfgScale: COMPOSE.cfg, seed },
+  };
+}
+
 const isBlocked = (err) => /content filter|blocked|responsible ai|moderat/i.test(String((err && err.message) || ''));
 
 // Returns { status, json }: { image } (a data URL); or { off: true } when no pictures are made here
@@ -154,6 +185,23 @@ export async function backdrop(body, { paint = null, budget = null, log = () => 
   } catch (err) {
     if (!isBlocked(err)) throw err;
     log(`the place, painted: turned down by the image model's filter (${String(err.message).slice(0, 120)})`);
+    return { status: 200, json: { blocked: true } };
+  }
+}
+
+// Returns { status, json } as backdrop does: { image }, { off }, or { blocked }
+export async function compose(body, { paint = null, budget = null, log = () => {} }) {
+  const b = checkCompose(body);
+  if (!paint) return { status: 200, json: { off: true } };
+  if (budget && !(await budget.take())) { log('the world painted as one: no pictures left today'); return { status: 200, json: { off: true, today: true } }; }
+  try {
+    const out = String(await paint(composeRequest(b)) || '');
+    if (!/^[A-Za-z0-9+/=]{100,}$/.test(out)) throw new Error('no picture came back');
+    if (out.length > COMPOSE.most) { log(`the world painted as one: too big to send (${out.length})`); return { status: 200, json: { off: true, big: true } }; }
+    return { status: 200, json: { image: `data:image/${out.startsWith('/9j/') ? 'jpeg' : 'png'};base64,${out}` } };
+  } catch (err) {
+    if (!isBlocked(err)) throw err;
+    log(`the world painted as one: turned down by the image model's filter (${String(err.message).slice(0, 120)})`);
     return { status: 200, json: { blocked: true } };
   }
 }

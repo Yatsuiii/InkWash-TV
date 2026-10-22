@@ -34,7 +34,8 @@ Gemini.
   another way at once.
 - **It wakes up in its place.** The Set Designer writes where your world stands from its story, and
   an image model (Gemini 3 Pro Image) paints it, and each thing in it, keeping to the layout you
-  drew. We built the pictures on Amazon Nova Canvas, which AWS retired on 30 September 2026, so the
+  drew. Once their world has settled, the place and the things in it are painted again as one
+  picture, so each thing belongs in the place rather than sitting on it. We built the pictures on Amazon Nova Canvas, which AWS retired on 30 September 2026, so the
   server now asks Gemini for the same pictures.
 - **Then more, when you want it.** *See all around it*, a panorama to look across; *Paint it again* in another look; *Walk inside*, a 3D
   world built from the picture (World Labs); *Step inside*, the drawing opening like a pop-up book.
@@ -80,8 +81,8 @@ at a daily spending limit. Their worlds stay on their TV.
 ## Tests
 
 ```sh
-cd tv && npm install && npm test && npm run e2e   # 88 unit tests; 33 browser steps at 1920 x 1080
-cd server && npm install && npm test              # 93 tests of the story server
+cd tv && npm install && npm test && npm run e2e   # 89 unit tests; 33 browser steps at 1920 x 1080
+cd server && npm install && npm test              # 94 tests of the story server
 cd ../../engine && node --test test.mjs personal/test.mjs dreams/test.mjs   # 93 tests of the engine
 ```
 

@@ -15,6 +15,7 @@
 //   /scene     { brief, young }  ->  { scene }: where their world stands, written when its story
 //              starts (server/scenery.mjs, engine/dreams/scene.mjs)
 //   /backdrop  { scene, image, young, seed }  ->  { image } (or { off } or { blocked }): the place
+//   /compose   { scene, image, young, seed }  ->  { image } (or { off } or { blocked }): their world as one painting
 //              painted from its scene, held to the TV's drawing of it (`image`)
 //   /thing     { image, name, look, rule, place, young, seed, width, height, reference }  ->  { image,
 //              cut } (or { off } or { blocked }): one thing of their world painted on its own, on
@@ -76,6 +77,8 @@ export function createAI({ endpoint, key = null, fetchImpl = (...a) => fetch(...
     scene: (body) => post('/scene', body, 30000),
     // the place painted from it, over the TV's own drawing of it (an image model: a while)
     backdrop: (body) => post('/backdrop', body, 90000),
+    // their world painted as one: the TV's view of it, its things set in, repainted together
+    compose: (body) => post('/compose', body, 90000),
     thing: (body) => post('/thing', body, 90000),
     // it comes alive: asked for, then looked in on until it is made (server/reel.mjs)
     alive: (body) => post('/alive', body, 30000),
