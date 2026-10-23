@@ -44,8 +44,20 @@ const join = (...parts) => parts.filter(Boolean).join('\n\n').slice(0, GEMINI.te
 // the image's own type, from its first bytes
 const mimeOf = (b64) => (String(b64 || '').startsWith('/9j/') ? 'image/jpeg' : 'image/png');
 
-// Nova Canvas's request, as one for Gemini: what to say, which pictures go with it, and in what shape
+// Nova Canvas's request, as one for Gemini: what to say, which pictures go with it, and in what
+// shape; with a picture of their world (`styleImage`, style.mjs) last, to paint it in the look of
 export function geminiRequest(nova) {
+  const r = requestOf(nova), style = nova && nova.styleImage;
+  if (!r || !style) return r;
+  const p = nova.textToImageParams || nova.imageVariationParams || {};
+  const onWhite = /white background/i.test(p.text || '');
+  return {
+    ...r,
+    images: [...r.images, style],
+    prompt: join(r.prompt, `The last picture is only there to show the look: it is of the world this belongs in. Paint in its style, colours and light, as if by the same hand, so the two sit together. Take nothing else from it: none of its things, not its layout${onWhite ? ', not its background: keep the plain white background' : ''}.`),
+  };
+}
+function requestOf(nova) {
   const n = nova || {}, cfg = n.imageGenerationConfig || {};
   // the shape asked for, as near as Gemini paints (outpainting keeps the sheet's, so at its widest)
   const ratio = cfg.width && cfg.height ? ratioOf(cfg.width, cfg.height) : null;

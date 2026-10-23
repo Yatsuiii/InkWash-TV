@@ -614,8 +614,9 @@ export function createNightWorld(host, { seed = 5, S = STAGE, scene = null, back
     const list = [...things.values()].filter((th) => th.L);
     if (!night || list.some((th) => th.L.toy)) list.sort((a, b) => a.foot[1] - b.foot[1]);
     for (const th of list) {
-      // in the painting as one, a thing made real is in the picture itself: what was laid on goes
-      const inIt = one > 0 && th.key.startsWith('made:');
+      // in the painting as one, every thing on screen when it was asked for is in the picture
+      // itself: what was laid on goes, or it shows twice, one over the other
+      const inIt = one > 0;
       if (inIt && one >= 1) continue;
       const on = th.id === chosen, solid = !!th.L.toy;
       th.a += ((on || solid ? 1 : 0.74) - th.a) * (1 - Math.exp(-dt / 0.25));

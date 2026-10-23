@@ -49,7 +49,7 @@ drawing wakes into that place, Step inside opens in it, and the TV at rest shows
 
 **Status:**
 - **Built and tested** in Chromium at 1920 × 1080, driven by simulated remote keys:
-  - 89 unit tests for the brush, the remote, "Feel it again", their world on the TV, the
+  - 91 unit tests for the brush, the remote, "Feel it again", their world on the TV, the
     phone, and the storyteller's loop and tools (what they say came again is never lost; a long
     telling, and the heaviest first turn, held to what the story server takes), with the
     check that holds a telling to their evidence and the taste that chooses between a line and its alternative, what a child never
@@ -64,7 +64,7 @@ drawing wakes into that place, Step inside opens in it, and the TV at rest shows
     walking through their world: where each thing stands in it, the eye's walk, where it stands
     before a thing (looking up to what is in the sky), and what was told of each thing, night by
     night; and each thing made real on its own: the part of the paper painted, its white cut away, how it springs up, and how a thing hops; and the opening, a night drawn as light at an even pace, never naming who tells the story; and the ledger that caps what the demo's pictures may cost; and worlds that meet: a thing visiting one world at a time, sent home, and let go with its world or its painter; nothing frightening sent to a child's world, and a child's storyteller told only what is gentle of it; where a visitor stands; and the storyteller told what is visiting, a line naming it counted as theirs, and the visitor never kept as a thing of the world it visits; never two things of one name in a world; and picture choices, an answer naming the thing of their world it says; and pictures: how they said a thing looks, on its card and in what its picture is made from, and how much of a picture Nova Canvas cut out is left; and walking inside a world built from their picture, a press a step or a turn, never far from where it was taken; and how a long story is held together: told to them as "you" (their words with how the story says them, a line in "I" sent back and then said as "you", what is kept kept as "you"), what happens next carried on from where it stopped and kept after the story so far, the last chapters word for word and older ones as fenced recaps, the other way to say a line heard at once on "not quite" (only a way that holds), and what it remembered kept with the chapter, on its page, and gone with what is forgotten; and what goes wrong: a world that can't be read opening empty with what was kept set aside, never written over; the storyteller's tools only by name; a question for the phone sent again when a poll doesn't get through; and a family kept wrongly holding one painter to an id and to a seal; and all around a picture and painted again: the panorama's sheet, looking across it with ◀ ▶, and the look a picture is painted again in, one not yet tried first;
-  - 94 tests for the story server, among them the deployed path end to end (the real Lambda handler, Anthropic SDK and Gemini client, with only the two APIs stood in for at the network, each turning away what its API would: a Bedrock model ID, a setting a model doesn't take, a seed, a history changed under Opus's thinking), never paid twice (a request being made waited for, one made answered again for ten minutes and not counted again, only what was made kept, a world asked for twice one world), and among them it comes alive (only a picture the size Nova Reel takes, one six-second shot moving softly through its scene, asked for and looked in on until it is made and looked for only in its own job's folder, counted each day and in the day's spending, and left still when Reel's filter turns it down), walk inside (a quick world asked for from the picture and its scene, private to the guide, looked in on until it is built, the lighter file a TV can draw handed over through the guide, none without a key or past the day's count, priced as it is asked for), all around it (only a sheet and mask the size Nova Canvas widens, the picture kept and its sides painted in its own look, a child's gentle, none past the day's pictures), Gemini (each request read as one for Gemini in the same words and shape, the best model a key has found and kept, its key in a header and never in the address, Google's filter said as a refusal, and what it can't do never asked), the Worldbuilder, the Illustrator and the Set Designer (with the looks it offers,
+  - 95 tests for the story server, among them the deployed path end to end (the real Lambda handler, Anthropic SDK and Gemini client, with only the two APIs stood in for at the network, each turning away what its API would: a Bedrock model ID, a setting a model doesn't take, a seed, a history changed under Opus's thinking), never paid twice (a request being made waited for, one made answered again for ten minutes and not counted again, only what was made kept, a world asked for twice one world), and among them it comes alive (only a picture the size Nova Reel takes, one six-second shot moving softly through its scene, asked for and looked in on until it is made and looked for only in its own job's folder, counted each day and in the day's spending, and left still when Reel's filter turns it down), walk inside (a quick world asked for from the picture and its scene, private to the guide, looked in on until it is built, the lighter file a TV can draw handed over through the guide, none without a key or past the day's count, priced as it is asked for), all around it (only a sheet and mask the size Nova Canvas widens, the picture kept and its sides painted in its own look, a child's gentle, none past the day's pictures), Gemini (each request read as one for Gemini in the same words and shape, the best model a key has found and kept, its key in a header and never in the address, Google's filter said as a refusal, and what it can't do never asked), the Worldbuilder, the Illustrator and the Set Designer (with the looks it offers,
     and what they said of how their world looks), each sent back once when its answer can't be used, what the image model is asked, built in Nova Canvas's shape and read by `server/gemini.mjs` into a Gemini request with no seed (for a painting, a place, or one thing alone on white, never told to leave out the white it stands on; made again from the picture it had; cut out of its white by Nova Canvas on Bedrock, or left for the TV to cut, as with Gemini), their own words for a thing first in every picture of it, a child's picture, the day's
     pictures counted, the day's spending priced and stopped at its limit, each caller's calls
     limited, phone pairings no one came back to let go, errors told without their details, the privacy page and the template held to what the code does, and
@@ -76,7 +76,7 @@ drawing wakes into that place, Step inside opens in it, and the TV at rest shows
     a long memory, the Worldbuilder's and the Illustrator's checks, a thing's look kept, how a
     thing looks in their own words (kept over any look, in every picture of it, and let go), and
     simulated dreamers and painters (below);
-  - 33 browser steps, run twice (on the served page, and on the packaged single file opened from
+  - 34 browser steps, run twice (on the served page, and on the packaged single file opened from
     `file://`, the way the Vega app loads it). They run the story server's own code, with a script
     standing in for Claude that calls every tool the way the storyteller would. They pair a phone
     in a second tab and paint two chapters. Each telling is checked against their evidence before
@@ -155,7 +155,13 @@ words a six-year-old knows, to keep the telling kind (never adding anything scar
 what they marked darker bigger), to ask only about the painting, and, if something they say
 suggests they are not safe, to tell them to tell a grown-up they trust. A TV that kept one world
 before there were painters opens it as the first painter's, untouched. Choosing a seal opens that
-painter's world.
+painter's world on its map: their world seen from above as a hand-inked atlas (the studio's
+`atlas.js`: coasts, hills, rivers, woods, a cartouche and a compass), its own place the land, named
+for it (a moonlit lake is The Moonlit Lake), and each thing marked on it where it stands in their
+world, with the mark a map gives it (a castle a fortress, a ferry a port). ◀ ▶ go from thing to
+thing; OK grows the map round the one chosen until it is their world, there, or the paper to draw
+what happens there next; Back from their world is the map again. The map grows with every thing
+painted (`src/worldmap.js`).
 
 **Your world is home.** Not a blank page: their world opens first, in its own place (below, *Where
 it stands*). Everything painted into it stands there, each thing where it first came: as the ink they
@@ -868,8 +874,8 @@ The eval sets are kept out of this repository so that they stay unseen.
 cd tv
 npm install         # esbuild, for the bundle
 npm start           # http://localhost:5180
-npm test            # 89 unit tests: the remote, the brush, "Feel it again", the world, the phone, the storyteller, the family, the new look, a long memory, stepping inside, the night, all around it
-npm run e2e         # 33 browser steps at 1920 x 1080; screenshots in test-shots/
+npm test            # 91 unit tests: the remote, the brush, "Feel it again", the world, the phone, the storyteller, the family, the new look, a long memory, stepping inside, the night, all around it
+npm run e2e         # 34 browser steps at 1920 x 1080; screenshots in test-shots/
 npm run bundle      # the page as one file: dist/inkwash-tv.html
 npm run e2e:bundle  # the 31 steps on that file, opened from file://
 node scripts/motion-sheet.mjs   # how things move, frame by frame: contact sheets of a thing coming to
@@ -877,7 +883,7 @@ node scripts/motion-sheet.mjs   # how things move, frame by frame: contact sheet
 
 cd server
 npm install
-npm test            # 94 tests, with stand-ins for Claude, Gemini, Nova Canvas, Nova Reel, World Labs, Polly and DynamoDB
+npm test            # 95 tests, with stand-ins for Claude, Gemini, Nova Canvas, Nova Reel, World Labs, Polly and DynamoDB
 npm run stand-in    # a scripted storyteller on http://localhost:5188 that calls the tools like the real one
 npm run dev         # the real storyteller, with your AWS credentials
 npm run cli         # the real storyteller through Claude Code (claude -p), on the Claude subscription

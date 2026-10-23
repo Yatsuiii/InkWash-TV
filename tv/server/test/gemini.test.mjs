@@ -170,3 +170,33 @@ test('Gemini, through the guide: a thing on white for the TV to cut out, a panor
   const jpg = geminiPaint({ key: 'k', fetch: fakeGemini(() => [200, answer('/9j/' + 'A'.repeat(400))]).f });
   assert.match((await thing({ image: strokes, name: 'the fox' }, { paint: jpg, cutout: false })).json.image, /^data:image\/jpeg;base64,\/9j\//);
 });
+
+test('Gemini: a picture of their world sent with a picture asked for, last, to paint it in its look and take nothing else from it', async () => {
+  const { checkStyle, withStyle } = await import('../style.mjs');
+  const { checkReal, checkThing } = await import('../illustrator.mjs');
+  const { checkCompose, composeRequest } = await import('../scenery.mjs');
+  const place = url('jpeg', jpeg(768, 432));
+  assert.equal(checkStyle(undefined), null);
+  assert.equal(checkStyle(place), place.split(',')[1]);
+  assert.throws(() => checkStyle('data:image/gif;base64,AAAA'), /style must be/);
+  // tonight's picture: in their world's own look, and with its place to paint it by
+  const r = checkReal({ image: url('png', png(64, 64)), brief: { lines: [{ text: 'A dragon by the castle.' }] }, place: 'Soft ink-wash watercolour, moonlit', style: place });
+  assert.equal(r.place, 'Soft ink-wash watercolour, moonlit');
+  const real = realRequest({ image: 'SU5L', scene: 'A dragon by a castle.', place: r.place, young: true, look: 'film' });
+  assert.match(real.textToImageParams.text, /^Soft ink-wash watercolour, moonlit\. A dragon by a castle\./);
+  assert.ok(!real.textToImageParams.text.includes('animated family film'), real.textToImageParams.text);
+  const g = geminiRequest(withStyle(real, r.style));
+  assert.deepEqual(g.images, ['SU5L', r.style]);
+  assert.match(g.prompt, /The last picture is only there to show the look/);
+  assert.match(g.prompt, /Take nothing else from it: none of its things, not its layout\.$/);
+  // a thing alone on white keeps its white
+  const t = checkThing({ image: url('png', png(64, 64)), name: 'the castle', style: place });
+  const gt = geminiRequest(withStyle(thingRequest(t), t.style));
+  assert.equal(gt.images.length, 2);
+  assert.match(gt.prompt, /not its background: keep the plain white background\.$/);
+  // their world's map, too; and without one, nothing is added
+  const c = checkCompose({ scene: { sky: { top: '#112233', bottom: '#223344' }, ground: { far: '#334455', near: '#445566' }, look: 'A map' }, image: url('jpeg', jpeg(64, 36)), style: place });
+  assert.equal(geminiRequest(withStyle(composeRequest(c), c.style)).images.length, 2);
+  assert.equal(geminiRequest(withStyle(realRequest({ image: 'SU5L', scene: 'A lake.' }), null)).images.length, 1);
+  assert.ok(!('styleImage' in withStyle(realRequest({ image: 'SU5L', scene: 'A lake.' }), null)));
+});

@@ -124,8 +124,9 @@ async function realClients() {
     const { BedrockRuntimeClient, InvokeModelCommand } = await import('@aws-sdk/client-bedrock-runtime');
     const canvas = new BedrockRuntimeClient({ region: process.env.GUIDE_REAL_REGION || region });
     paint = async (body) => {
-      // what Gemini is told the picture is for (gemini.mjs) is not Nova Canvas's to read
-      const { intent, ...nova } = body || {};
+      // what Gemini is told the picture is for, and the picture of their world it is painted in the
+      // look of (gemini.mjs), are not Nova Canvas's to read
+      const { intent, styleImage, ...nova } = body || {};
       const out = await canvas.send(new InvokeModelCommand({ modelId: process.env.GUIDE_REAL_MODEL || REAL.model, contentType: 'application/json', accept: 'application/json', body: JSON.stringify(nova) }));
       const json = JSON.parse(new TextDecoder().decode(out.body));
       if (json.error) throw new Error(json.error);

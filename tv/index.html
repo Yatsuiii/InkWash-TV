@@ -382,11 +382,9 @@
   #keptlight { position: absolute; left: 0; top: 0; width: 1568px; height: 980px; pointer-events: none; }
   #kept[hidden] + #keptlight, #stage:not(.night-ink) #keptlight { display: none; }
   #stage.night-ink #kept { visibility: hidden; }
-  /* what it wakes into blooms in the world, its edges lost in it, not as a picture with corners */
-  #stage.night-ink #real {
-    -webkit-mask-image: radial-gradient(circle at var(--x, 50%) var(--y, 55%), #000 var(--bloom), transparent calc(var(--bloom) + 26%)), linear-gradient(to bottom, transparent, #000 16%, #000 80%, transparent), linear-gradient(to right, transparent, #000 12%, #000 88%, transparent);
-    mask-image: radial-gradient(circle at var(--x, 50%) var(--y, 55%), #000 var(--bloom), transparent calc(var(--bloom) + 26%)), linear-gradient(to bottom, transparent, #000 16%, #000 80%, transparent), linear-gradient(to right, transparent, #000 12%, #000 88%, transparent);
-    -webkit-mask-composite: source-in; mask-composite: intersect; }
+  /* what it wakes into blooms out of the world and then is the whole screen: never a picture laid
+     over the world with the world's own things showing round its edges */
+  #stage.night-ink #real { left: -176px; top: -22px; width: 1920px; height: 1080px; }
   .key { display: inline-block; min-width: 36px; padding: 1px 10px; margin-right: 8px; border-radius: 10px; background: var(--moon); color: #0b0e22; text-align: center; font-weight: 700; }
   #toast { position: absolute; left: 50%; top: 60px; transform: translateX(-50%); padding: 14px 32px; border-radius: 20px; font: 500 30px "Alegreya Sans", Arial, sans-serif; white-space: nowrap; }
   #toast.low { top: auto; bottom: 120px; }
@@ -472,6 +470,23 @@
   .card > .sparks { top: 110px; }
   /* their world at night (night.js): the home they come back to, the whole screen */
   #atlas { position: absolute; inset: 0; overflow: hidden; background: #02030a; color: var(--moon); }
+  /* their world's map (worldmap.js): the whole story as a hand-inked atlas; OK grows it round a place until it is their world */
+  #worldmap { position: absolute; inset: 0; z-index: 2010; overflow: hidden; color: var(--moon); background: radial-gradient(ellipse 110% 90% at 40% 45%, #1a2150 0%, #0c1029 50%, #05060f 100%); transform-origin: 50% 50%; will-change: transform; transition: transform 1500ms cubic-bezier(0.55, 0.02, 0.85, 0.35), opacity 800ms ease 700ms; }
+  #worldmap.zoomed { transform: scale(3.4); opacity: 0; }
+  #worldmap .sheet { position: absolute; left: 40px; top: 80px; width: 1440px; height: 900px; overflow: hidden; box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6), 0 0 120px rgba(150, 170, 255, 0.14); }
+  #worldmap .drawn { position: absolute; left: 0; top: 0; transform: scale(0.9); transform-origin: 0 0; }
+  #worldmap .drawn svg { display: block; width: 1600px; height: 1000px; }
+  #worldmap .ring { position: absolute; width: 104px; height: 104px; transform: translate(-50%, -58%); border-radius: 50%; pointer-events: none; background: radial-gradient(closest-side, rgba(168, 87, 46, 0.28), rgba(168, 87, 46, 0.1) 62%, rgba(168, 87, 46, 0) 100%); box-shadow: 0 0 0 5px rgba(168, 87, 46, 0.9), 0 0 0 11px rgba(245, 239, 223, 0.75), 0 0 40px 12px rgba(168, 87, 46, 0.35); animation: mapring 2.4s ease-in-out infinite; transition: left 450ms ease, top 450ms ease; }
+  @keyframes mapring { 0%, 100% { transform: translate(-50%, -58%) scale(1); } 50% { transform: translate(-50%, -58%) scale(1.1); } }
+  #worldmap .side { position: absolute; right: 26px; top: 140px; width: 398px; padding: 30px 28px 26px; box-sizing: border-box; border-radius: 24px; background: var(--glass); border: 1px solid var(--edge); box-shadow: var(--glow); transition: opacity 500ms ease; }
+  #worldmap.zoomed .side { opacity: 0; }
+  #worldmap .side .kicker { margin: 0; font: 700 18px/1.35 "Alegreya Sans", Arial, sans-serif; letter-spacing: 0.16em; text-transform: uppercase; color: var(--gold); }
+  #worldmap .side .name { margin: 10px 0 0; font: 600 44px/1.05 Alegreya, Georgia, serif; color: var(--moon); }
+  #worldmap .side .lore { margin: 14px 0 0; font: italic 400 25px/1.35 Alegreya, Georgia, serif; color: rgba(243, 234, 216, 0.86); }
+  #worldmap .side .felt { margin: 12px 0 0; font: 700 17px "Alegreya Sans", Arial, sans-serif; letter-spacing: 0.14em; text-transform: uppercase; color: var(--moon-3); }
+  #worldmap .side .do { list-style: none; margin: 24px 0 0; padding: 0; display: flex; flex-direction: column; align-items: flex-start; gap: 6px; }
+  #worldmap .side .do .chip { padding: 6px 20px 8px; border-radius: 999px; font: 500 26px/1.1 "Alegreya Sans", Arial, sans-serif; color: var(--moon-2); }
+  #worldmap .side .do .chip.on { background: rgba(246, 236, 216, 0.94); color: #12141f; }
   #atlas .night { position: absolute; inset: 0; }
   #atlas .night canvas.sky { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; }
   #atlas .night .things { position: absolute; inset: 0; }
@@ -651,6 +666,7 @@
   <section id="who" hidden aria-live="polite"><h2></h2><p class="sub"></p><div class="tiles"></div><div class="chips"></div><p class="room" hidden></p></section>
   <section id="collected" aria-live="polite"></section>
   <section id="atlas" hidden aria-live="polite"></section>
+  <section id="worldmap" hidden aria-live="polite"></section>
   <section id="gallery" hidden><div class="frame"><img alt=""><div class="alive"></div></div><div class="frame"><img alt=""><div class="alive"></div></div><div class="caption"><span class="stamp"></span><div><p class="world"></p><p class="title"></p></div></div><p class="wake">Press any button to paint</p></section>
   <section id="intro" hidden aria-live="polite"><canvas width="1920" height="1080"></canvas><div class="world"><img alt=""></div><div class="world"><img alt=""></div><h1 class="mark"><span class="word">Inkwash</span><svg class="swash" viewBox="0 0 120 12" aria-hidden="true"><path d="M2 7.2 C 12 2.4, 34 2.8, 62 4.2 C 86 5.2, 104 4.4, 119 2.8 C 104 7.8, 84 9.4, 58 9.6 C 32 9.8, 13 11.4, 2 7.2 Z"/></svg></h1><p class="line"></p><div class="chapter"></div><p class="cap"></p><p class="skip">Press any button to begin</p></section>
   <section id="previously" hidden aria-live="polite"><p class="kicker"></p><div class="reel"></div><h2 class="title"></h2><div class="sign"><span class="stamp"></span><p class="night"></p></div></section>

@@ -30,6 +30,10 @@ import { runGuide, stepOf } from './agent.js';
 import { SHEET as PANORAMA, nextLook, LOOK_NAMES, versionLabel, isVersionLabel, panStep, panOffset, MORE, foldChoices } from './wide.js';
 import { createTools, firstMessage, laterMessage, briefFor, createRenderer, finalTelling } from './harness.js';
 import { createPaintings, createNights, createWorlds, PLACE, COMPOSED } from './paintings.js';
+import { atlasSpec, drawAtlas, mapSign, zoomInto, titleOf } from './worldmap.js';
+// their world opens on its map (worldmap.js, openMap); not in a browser driven by the tests unless
+// asked (?map, or __inktv.mapOn), and ?map=0: never
+let mapOn = (() => { try { const q = new URLSearchParams(location.search); return q.get('map') !== '0' && (q.has('map') || !navigator.webdriver); } catch { return false; } })();
 import { composeSign, composeDue, COMPOSE_AT } from './compose.js';
 import { regionOf, conditionOf, cutAway, solidOf, signOfThing } from './things.js';
 import { createInside } from './inside.js';
@@ -160,12 +164,13 @@ function updateHints() {
     const back = step === 'for' || painter || (step === 'seal' && family.painters.length) ? 'back' : family.demo ? 'leave the demo' : null;
     html = `<span>${KEY('◀')}${KEY('▶')}choose</span><span>${KEY('OK')}${step === 'for' ? 'begin' : step === 'pick' ? 'go in' : 'choose this seal'}</span>${onPainter ? `<span>${KEY('»')}their world</span><span>${KEY('«')}their book</span>` : ''}${back ? `<span>${KEY('Back')}${back}</span>` : ''}${family.demo || step === 'for' ? '' : `<span>${KEY('▶‖')}a demo family</span>`}`;
   }
+  else if (state.mode === 'atlas' && state.atlas && state.atlas.mapView) html = `<span>${KEY('◀')}${KEY('▶')}another place</span><span>${KEY('▲')}${KEY('▼')}choose</span><span>${KEY('OK')}go</span><span>${KEY('Back')}the seals</span>`;
   else if (state.mode === 'atlas' && state.atlas && state.atlas.walk) html = walkHints(state.atlas.walk);
   else if (state.mode === 'atlas' && state.atlas && state.atlas.forget) html = `<span>${KEY('▲')}${KEY('▼')}choose</span><span>${KEY('OK')}this one</span><span>${KEY('Back')}keep it</span>`;
   else if (state.mode === 'atlas' && state.atlas && state.atlas.look) html = `<span>${KEY('▲')}${KEY('▼')}choose</span><span>${KEY('OK')}this one</span>${phone && phone.listening ? '<span>or say it on your phone</span>' : ''}<span>${KEY('Back')}keep it as it is</span>`;
   else if (state.mode === 'atlas' && state.atlas && state.atlas.said) html = `<span>${KEY('▲')}${KEY('▼')}choose</span><span>${KEY('OK')}this one</span><span>or say it on your phone</span><span>${KEY('Back')}keep it as it is</span>`;
   else if (state.mode === 'atlas' && state.atlas && state.atlas.wonder) html = `<span>${KEY('▲')}${KEY('▼')}choose</span><span>${KEY('OK')}this one</span><span>${KEY('Back')}not now</span>`;
-  else if (state.mode === 'atlas') html = `<span>${KEY('▲')}${KEY('▼')}choose</span><span>${KEY('OK')}go</span>${state.atlas && state.atlas.cards && state.atlas.cards.length > 1 ? `<span>${KEY('◀')}${KEY('▶')}another thing in it</span>` : ''}<span>${KEY('Back')}the seals</span>`;
+  else if (state.mode === 'atlas') html = `<span>${KEY('▲')}${KEY('▼')}choose</span><span>${KEY('OK')}go</span>${state.atlas && state.atlas.cards && state.atlas.cards.length > 1 ? `<span>${KEY('◀')}${KEY('▶')}another thing in it</span>` : ''}<span>${KEY('Back')}${mapOn && state.atlas && state.atlas.cards.length && state.atlas.nights >= 1 ? 'the map' : 'the seals'}</span>`;
   else if (state.mode === 'gallery' || state.mode === 'intro') html = '';
   else if (state.mode === 'tell' && state.tell && state.tell.recap) html = `<span>${KEY('OK')}next</span><span>${KEY('▶‖')}pause</span><span>${KEY('Back')}back to drawing</span>`;
   else if (state.mode === 'tell') html = `<span>${KEY('▲')}that's it</span><span>${KEY('▼')}not quite</span><span>${KEY('OK')}next</span><span>${KEY('▶‖')}pause</span><span>${KEY('Back')}back to drawing</span>`;
@@ -1596,7 +1601,9 @@ function dreamReal(session, told, layers, mood = null) {
   const lines = told.lines.map((l) => ({ text: l.text, box: l.box }));
   const things = world.recognize({ words: lines.map((l) => l.text) }).filter((x) => x.said).map((x) => x.id);
   // what it is asked with, kept to paint it again in another look (againChosen)
-  R.ask = { image: inkForReal(layers), brief: illustrateBrief(world.toJSON(), { title: told.title, lines, things }), young: !!who.young, look: who.young ? 'film' : 'real' };
+  // in their world's own look, and painted by the same hand as its place (server/style.mjs)
+  const place = placeLook(), style = styleOf(who);
+  R.ask = { image: inkForReal(layers), brief: illustrateBrief(world.toJSON(), { title: told.title, lines, things }), young: !!who.young, look: who.young ? 'film' : 'real', ...(place ? { place } : {}), ...(style ? { style } : {}) };
   session.real = ai.real({ ...R.ask, seed: realSeed(`${sitter()}:${who.id}`) }).then(toPaper).then((r) => {
     if (!r || !r.image) { if (r && r.blocked) console.log('dream it real: the picture was turned down'); return null; }
     // its versions, the one shown first (`k`)
@@ -1890,7 +1897,7 @@ async function comeToLife(who, c, el, rec) {
 // in it, or hear last time's story. ◀ ▶ go from thing to thing; ▲ ▼ choose what to do; OK does
 // it; Back is the seals. Choosing a seal opens it, and so does every night's end, the world grown.
 // The pictures are cut from the nights' paintings as they load.
-function openWorld({ note = null, grew = false } = {}) {
+function openWorld({ note = null, grew = false, map = false } = {}) {
   if (!painter) return openWho();
   for (const id of ['#who', '#feel', '#say', '#pair', '#ending']) $(id).hidden = true;
   const kept = $('#kept');
@@ -1901,8 +1908,10 @@ function openWorld({ note = null, grew = false } = {}) {
   state.atlas = { id: painter.id, i: 0, k: 0, art: new Map(), note, grew };
   showAtlas();
   $('#atlas').hidden = false;
+  // chosen from the seals: their world opens on its map, the whole of their story at once
+  if (map && mapOn && state.atlas.cards.length && state.atlas.nights >= 1) openMap(state.atlas);
   updateHints();
-  if (note && readsAloud()) aloud.say(note);
+  if (note && readsAloud() && !state.atlas.mapView) aloud.say(note);
   // home after a night kept: the night closes on a question; else one still waiting is asked again
   if (grew && state.endsOn === painter.id) { state.endsOn = null; wonderAtEnd(state.atlas); }
   else wonderStill(state.atlas);
@@ -1988,6 +1997,23 @@ function showAtlas() {
 // night on the lake.
 // each by the world it is of (a demo family's painters share ids with the TV's own)
 const placeImages = new Map(), placeAsked = { scene: new Set(), paint: new Set() };
+// their world's place as painted, small, sent with each picture asked for so it is painted by the
+// same hand (server/style.mjs): its style, colours and light. None until it is painted, nor for a
+// place painted for a scene it no longer has.
+const styles = new Map();
+function styleOf(p) {
+  const seen = p && placeImages.get(worldKey(p)), scene = p && painter && p.id === painter.id && world ? world.scene : null;
+  if (!seen || !seen.img || !scene || seen.sign !== signOf(scene)) return null;
+  const k = `${worldKey(p)}|${seen.sign}`;
+  if (!styles.has(k)) {
+    try {
+      const c = Object.assign(document.createElement('canvas'), { width: 768, height: 432 });
+      c.getContext('2d').drawImage(seen.img, 0, 0, 768, 432);
+      styles.set(k, c.toDataURL('image/jpeg', 0.8));
+    } catch { styles.set(k, null); }
+  }
+  return styles.get(k);
+}
 const placeSeed = (p) => realSeed(`world:${p.id}`) % 997;
 const signOf = (scene) => (scene ? realSeed(JSON.stringify(scene)) : null);
 // their world's place as it is shown elsewhere (the painting woken, the TV at rest, Step inside, the
@@ -2265,7 +2291,8 @@ async function bringToLife(p, c, parts, box, look, rule = c.rule || null) {
     const reference = kept && kept.image && sameRegion(kept.region, R.region) ? await onWhite(kept, R) : null;
     let r = null;
     try {
-      r = await ai.thing({ image: conditionOf(parts, R).toDataURL('image/png'), name: c.name, look, rule, place, young: !!p.young, seed: realSeed(`thing:${p.id}:${c.id}`), width: R.width, height: R.height, ...(reference ? { reference } : {}) });
+      const style = styleOf(p);
+      r = await ai.thing({ image: conditionOf(parts, R).toDataURL('image/png'), name: c.name, look, rule, place, young: !!p.young, seed: realSeed(`thing:${p.id}:${c.id}`), width: R.width, height: R.height, ...(reference ? { reference } : {}), ...(style ? { style } : {}) });
     } catch (err) {
       // the guide can't be reached, or won't make more today: none asked for a while
       console.log(`a thing, made real: ${err.message}`);
@@ -2472,6 +2499,7 @@ function showWorldActions() {
 }
 function atlasPress(button) {
   const A = state.atlas, n = A.cards.length;
+  if (A.mapView) return mapPress(A, button);
   if (A.walk) return walkPress(A, button);
   if (A.look) return lookPress(A, button);
   if (A.forget) return forgetPress(A, button);
@@ -2505,13 +2533,123 @@ function atlasPress(button) {
     if (a.id === 'come-home') return comeHome(A, c);
     return paintNew(a.id === 'more' && c ? { about: { id: c.id, name: c.name } } : {});
   } else if (button === 'back') {
-    const k = family.painters.findIndex((p) => p.id === A.id);
-    closeWorld();
-    openWho();
-    state.who.i = Math.max(0, k);
-    showWho();
-    updateHints();
+    // back out to the map, if it opened on one; from there, the seals
+    if (mapOn && n && A.nights >= 1) return openMap(A, { back: true });
+    toSeals(A);
   }
+}
+function toSeals(A) {
+  const k = family.painters.findIndex((p) => p.id === A.id);
+  closeWorld();
+  openWho();
+  state.who.i = Math.max(0, k);
+  showWho();
+  updateHints();
+}
+// ---------------------------------------------------------------- their world's map (worldmap.js)
+
+// The whole of their story as a hand-inked atlas, as a storybook opens on its map: each chapter a
+// region of the land, in the order it was told, each thing of theirs a place in it. ◀ ▶ go from
+// place to place along the story; ▲ ▼ choose what to do; OK: the map grows round the place until it
+// is their world, there, or the paper to draw what happens there next. Back: the seals.
+const MAP_ZOOM_MS = 1500, atlases = new Map();
+function openMap(A, { back = false } = {}) {
+  if (!A || state.atlas !== A || !A.cards.length) return false;
+  const mine = A.cards.filter((c) => !c.visit);
+  if (!mine.length) return false;
+  // each where it stands in their world (where it first came, as home has it)
+  const node = (c) => A.map.nodes.find((x) => x.id === c.id);
+  const spec = atlasSpec({ title: `${sealOf(A.p.seal).name}’s world`, chapters: Math.max(1, A.nights), things: mine.map((c) => ({ id: c.id, name: c.name, kind: c.kind, xy: node(c) ? [node(c).x, node(c).y] : null })), scene: world.scene, seed: placeSeed(A.p) + 1 });
+  const sign = mapSign(spec);
+  // drawn once a sitting: the land grown, its rivers, woods and names
+  if (!atlases.has(sign)) { try { atlases.set(sign, drawAtlas(spec, { id: `w${placeSeed(A.p)}` })); } catch (err) { console.log(`the map: ${err.message}`); return false; } }
+  const drawn = atlases.get(sign);
+  if (!drawn.spots.length) return false;
+  const at = A.cards[A.i] ? drawn.spots.findIndex((s) => s.id === A.cards[A.i].id) : -1;
+  const el = $('#worldmap');
+  A.mapView = { spots: drawn.spots, i: at < 0 ? drawn.spots.length - 1 : at, k: 0, el, sign, zooming: false };
+  el.innerHTML = `<div class="sheet"><div class="drawn" style="width:${drawn.W}px;height:${drawn.H}px">${drawn.svg}<span class="ring"></span></div></div>`
+    + '<div class="side"><div class="about"></div><ul class="do"></ul></div>';
+  showMapPlace(A);
+  el.classList.remove('zoomed');
+  if (back) {
+    // from their world back up to the whole of it: from close over the place it was at
+    const z = zoomInto(A.mapView.spots[A.mapView.i]);
+    el.style.transition = 'none'; el.style.transformOrigin = z.origin; el.classList.add('zoomed');
+    el.hidden = false;
+    void el.offsetWidth;
+    el.style.transition = '';
+    el.classList.remove('zoomed');
+    sound.dip(true);
+  } else el.hidden = false;
+  updateHints();
+  if (readsAloud()) aloud.say(`${sealOf(A.p.seal).name}’s world. ${titleOf(A.mapView.spots[A.mapView.i].name)}.`);
+  return true;
+}
+const mapActions = (A) => [
+  { id: 'go', text: 'Go there' },
+  { id: 'draw', text: 'Draw what happens here' },
+  ...(A.nights ? [{ id: 'book', text: 'Read your book' }] : []),
+];
+function showMapPlace(A) {
+  const M = A.mapView;
+  if (!M) return;
+  const s = M.spots[M.i], c = A.cards.find((x) => x.id === s.id) || {};
+  const ring = M.el.querySelector('.ring');
+  ring.style.left = `${s.x}px`; ring.style.top = `${s.y}px`;
+  const told = (world.toJSON().nights || []).find((x) => x.n === c.first);
+  const when = `Chapter ${c.first || 1}${told && told.title ? `: ${told.title}` : ''}`;
+  M.el.querySelector('.side .about').innerHTML = `<p class="kicker">${esc(when)}</p><p class="name">${esc(cap(c.name || s.name))}</p>${c.lore ? `<p class="lore">${esc(c.lore)}</p>` : ''}${c.nights > 1 ? `<p class="felt">In ${c.nights} chapters</p>` : ''}`;
+  const acts = mapActions(A);
+  M.k = Math.min(M.k, acts.length - 1);
+  M.el.querySelector('.side .do').innerHTML = acts.map((a, i) => `<li class="chip${i === M.k ? ' on' : ''}">${esc(a.text)}</li>`).join('');
+}
+function mapPress(A, button) {
+  const M = A.mapView;
+  if (M.zooming) return;
+  if (button === 'left' || button === 'right') {
+    M.i = (M.i + (button === 'left' ? M.spots.length - 1 : 1)) % M.spots.length;
+    showMapPlace(A); sound.dip(false);
+    if (readsAloud()) aloud.say(titleOf(M.spots[M.i].name));
+  } else if (button === 'up' || button === 'down') {
+    const acts = mapActions(A);
+    M.k = (M.k + (button === 'up' ? acts.length - 1 : 1)) % acts.length;
+    showMapPlace(A); sound.dip(false);
+    if (readsAloud()) aloud.say(acts[M.k].text);
+  } else if (button === 'select' || button === 'playpause') {
+    const a = mapActions(A)[M.k], s = M.spots[M.i], c = A.cards.find((x) => x.id === s.id);
+    if (a.id === 'book') { closeMap(A); return openJournal(painter, { from: 'atlas' }); }
+    zoomIntoPlace(A, s, () => {
+      const i = A.cards.indexOf(c);
+      if (i >= 0) { A.i = i; showAtlasCard(); showWorldActions(); if (A.night) { A.night.choose(c.id); A.night.greet(c.id); } }
+      if (a.id === 'draw' && c) paintNew({ about: { id: c.id, name: c.name } });
+      else if (c && readsAloud()) aloud.say(cap(c.name));
+    });
+  } else if (button === 'back') {
+    closeMap(A);
+    toSeals(A);
+  }
+}
+// the map grows round the place until it is their world, there
+function zoomIntoPlace(A, s, then) {
+  const M = A.mapView, z = zoomInto(s);
+  M.zooming = true;
+  M.el.style.transformOrigin = z.origin;
+  M.el.classList.add('zoomed');
+  sound.dip(true);
+  setTimeout(() => {
+    if (A.mapView !== M) return;
+    closeMap(A);
+    updateHints();
+    then();
+  }, MAP_ZOOM_MS);
+}
+function closeMap(A) {
+  const M = A && A.mapView;
+  if (!M) return;
+  M.el.hidden = true;
+  M.el.classList.remove('zoomed');
+  A.mapView = null;
 }
 // ---------------------------------------------------------------- worlds that meet
 
@@ -3000,6 +3138,13 @@ async function galleryNext(G) {
   const pic = await it.pics.get(it.n).catch(() => null);
   if (state.gallery !== G) return;
   if (!pic) { G.next = performance.now() + 50; return; }
+  // once any night has a picture of its own, only those are shown: a drawing laid over a picture
+  // of the place reads as a scribble on a photo
+  if (!pic.real) {
+    if (G.real === undefined) G.real = (await Promise.all(G.items.map((x) => x.pics.get(x.n).catch(() => null)))).some((q) => q && q.real);
+    if (state.gallery !== G) return;
+    if (G.real) { G.next = performance.now() + 50; return; }
+  }
   const frames = [...document.querySelectorAll('#gallery .frame')], f = frames[G.frame], other = frames[1 - G.frame];
   const img = f.querySelector('img');
   // as it was made real; or in their world's place (at night, until it has one)
@@ -3272,7 +3417,8 @@ function againChosen(o) {
   R.again = true;
   showOffer(); sound.dip(true);
   if (readsAloud()) aloud.say(`Painting it again, ${LOOK_NAMES[look] || ''}.`);
-  ai.real({ ...R.ask, look, seed: realSeed(`again:${who.id}:${night}:${R.takes.length}`) }).then(toPaper).then((r) => {
+  // in the look chosen, not their world's
+  ai.real({ ...R.ask, place: null, style: null, look, seed: realSeed(`again:${who.id}:${night}:${R.takes.length}`) }).then(toPaper).then((r) => {
     R.again = false;
     if (!r || !r.image) {
       if (state.offer === o) showOffer();
@@ -3891,7 +4037,7 @@ function startPainter(p) {
   $('#painter .name').textContent = sealOf(p.seal).name;
   $('#painter').hidden = false;
   updateDishes();
-  openWorld();
+  openWorld({ map: true });
 }
 
 // ---------------------------------------------------------------- the book of their world
@@ -4034,7 +4180,8 @@ function frameOnce(t) {
   if (state.mode === 'atlas' && state.atlas && state.atlas.night) {
     const A = state.atlas, W = A.walk;
     if (W && W.hearing && t > W.hearing.next) heardNext(A);
-    A.night.frame(t / 1000, W && !W.leaving ? walkingHeld(t) : null);
+    // under the map it isn't seen, until the map grows round a place in it
+    if (!A.mapView || A.mapView.zooming) A.night.frame(t / 1000, W && !W.leaving ? walkingHeld(t) : null);
   }
   // a world neither store would take: tried again every minute, as well as each time the seals come up
   if (state.unkept.size && t > state.retryKeep) { state.retryKeep = t + 60000; for (const [key, a] of state.unkept) keepTheirs(a.w, key, a.nights); }
@@ -4201,6 +4348,9 @@ window.__inktv = {
   get previously() { const el = $('#previously'); return el.hidden ? null : { kicker: el.querySelector('.kicker').textContent, title: el.querySelector('.title').textContent, night: el.querySelector('.night').textContent, reel: [...el.querySelectorAll('figcaption')].map((x) => x.textContent) }; },
   // the cards that flew in for what the last night kept; the ones on screen now
   get collected() { return { last: state.collected || null, showing: [...document.querySelectorAll('#collected .card .name')].map((x) => x.textContent) }; },
+  // their world's map: whether it opens on one (set it for a test), and what it shows
+  mapOn(on = true) { mapOn = !!on; return mapOn; },
+  get worldmap() { const A = state.atlas, M = A && A.mapView; return M && { places: M.spots.map((x) => x.name), at: M.spots[M.i].name, id: M.spots[M.i].id, regions: [...M.el.querySelectorAll('.atlas-region-name')].map((t) => t.textContent), names: [...M.el.querySelectorAll('svg text')].map((t) => t.textContent), card: (M.el.querySelector('.side .name') || {}).textContent || null, actions: mapActions(A).map((x) => x.text), k: M.k, zooming: M.zooming }; },
   get atlas() { const A = state.atlas; return A && { id: A.id, title: $('#atlas h2') ? $('#atlas h2').textContent : null, about: $('#atlas header p') ? $('#atlas header p').textContent : null, things: (A.cards || []).map((c) => c.name), i: A.i, card: $('#atlas .side .name') ? $('#atlas .side .name').textContent : null, pictures: [...A.art.values()].filter(Boolean).length, real: [...A.art.values()].filter((a) => a && a.real).length, made: [...A.art.values()].filter((a) => a && a.sprite).length, inTheirWords: [...A.art.values()].filter((a) => a && a.sprite && ruleOfSign(a.sprite.sign)).length, came: A.came || 0, composed: !!(A.night && A.night.composed), making: A.night ? A.night.state.things.filter((t) => t.making).length : 0, hops: A.night ? Object.fromEntries(A.night.state.things.map((t) => [t.id, t.hops])) : {}, nodes: A.map ? A.map.nodes.map((n) => ({ name: n.name, x: n.x, y: n.y, r: n.r })) : [], actions: shownActions(A).map((a) => a.text), all: worldActions(A).map((a) => a.text), k: A.look ? A.look.k : A.forget ? A.forget.k : A.said ? A.said.k : A.wonder ? A.wonder.k : A.k, said: A.said ? { name: A.said.name, question: A.said.question } : null, rule: ((A.cards || [])[A.i] || {}).rule || null, quiet: document.body.classList.contains('quiet'), visiting: (A.cards || []).filter((c) => c.visit).map((c) => c.name), where: whereOf(A, (A.cards || [])[A.i]) }; },
   get about() { return state.about || null; },
   // for the tests: how long their world is left alone before its words fade (ms; Infinity: never)

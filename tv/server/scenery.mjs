@@ -9,6 +9,7 @@
 
 import { checkScene, sceneBrief, SHAPES, GROUND_KINDS, AIR_KINDS, LIGHT_KINDS } from './engine/dreams/index.mjs';
 import { BadRequest } from './errors.mjs';
+import { checkStyle, withStyle } from './style.mjs';
 import { REAL } from './illustrator.mjs';
 
 export const SCENE_SYSTEM = `You are the Set Designer of one person's imagined world, kept on their TV in Inkwash. They paint their world a piece at a time with the TV remote, and a storyteller tells each painting back. The TV shows their world as a place they can look across and walk through, with each thing they painted standing in it. You decide what that place is.
@@ -152,7 +153,7 @@ export function checkCompose(body) {
   const m = /^data:image\/jpeg;base64,([A-Za-z0-9+/=]+)$/.exec(String(body.image || ''));
   if (!m) throw new BadRequest('image must be the world as the TV shows it, a JPEG data URL');
   if (m[1].length > COMPOSE.image) throw new BadRequest('image is too large');
-  return { scene, image: m[1], young: body.young === true, seed: Math.max(0, Math.min(858993459, Math.round(Number(body.seed) || 0))) };
+  return { scene, image: m[1], young: body.young === true, seed: Math.max(0, Math.min(858993459, Math.round(Number(body.seed) || 0))), style: checkStyle(body.style) };
 }
 export function composeRequest({ scene, image, young = false, seed = 0 }) {
   const look = scene.look || (scene.things.style === 'light' ? 'a luminous painted scene' : 'a bright painted world, soft warm light');
@@ -197,7 +198,7 @@ export async function compose(body, { paint = null, budget = null, log = () => {
   if (!paint) return { status: 200, json: { off: true } };
   if (budget && !(await budget.take())) { log('the world painted as one: no pictures left today'); return { status: 200, json: { off: true, today: true } }; }
   try {
-    const out = String(await paint(composeRequest(b)) || '');
+    const out = String(await paint(withStyle(composeRequest(b), b.style)) || '');
     if (!/^[A-Za-z0-9+/=]{100,}$/.test(out)) throw new Error('no picture came back');
     if (out.length > COMPOSE.most) { log(`the world painted as one: too big to send (${out.length})`); return { status: 200, json: { off: true, big: true } }; }
     return { status: 200, json: { image: `data:image/${out.startsWith('/9j/') ? 'jpeg' : 'png'};base64,${out}` } };

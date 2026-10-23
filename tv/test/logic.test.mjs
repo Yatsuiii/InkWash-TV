@@ -2218,3 +2218,57 @@ test('their world painted as one: asked for once per sign of what it is made fro
   assert.equal(composeDue({ ...base, shown: sign }), null, 'already on screen');
   assert.equal(composeDue({ ...base, shown: 'old' }), 'drop', 'on screen from before the world changed: taken away');
 });
+
+import { atlasSpec, drawAtlas, placeNameOf, markOf, titleOf, mapSign, zoomInto, onScreen, MAP } from '../src/worldmap.js';
+import { COMPOSED, MAPPED } from '../src/paintings.js';
+
+test('their world’s map: one land, their world’s own place, named for it; each thing on it where it stands in their world', () => {
+  // the place named as a map would, from the words its scene was written with
+  assert.equal(placeNameOf({ place: 'A moonlit lake ringed by low hills, a wooden pier at its edge.' }), 'The Moonlit Lake');
+  assert.equal(placeNameOf({ place: 'The grey surface of the moon under a black sky' }), 'The Grey Surface of the Moon');
+  assert.equal(placeNameOf({ place: 'A vast library that goes on for ever' }), 'The Vast Library');
+  assert.equal(placeNameOf(null), 'The Lake at Night');
+  const scene = { place: 'The grey surface of the moon under a black sky', ground: { kind: 'sand', far: '#888888', near: '#999999' }, sky: { top: '#000000', bottom: '#111111' } };
+  const things = [
+    { id: 'e1', name: 'the rocket', kind: 'thing', xy: [200, 600] },
+    { id: 'e2', name: 'the moon', kind: 'place', xy: [1200, 200] },
+    { id: 'e3', name: 'the moon castle', kind: 'place', xy: [800, 500] },
+    { id: 'e4', name: 'the dragon friend', kind: 'creature', xy: [1400, 700] },
+  ];
+  const spec = atlasSpec({ title: 'Star’s world', chapters: 3, things, scene, seed: 7 });
+  // one land; the moon is that land itself, not a mark on it; the castle a fortress on it
+  assert.equal(spec.regions.length, 1);
+  assert.deepEqual([spec.regions[0].name, spec.regions[0].entity, spec.regions[0].biome], ['The Grey Surface of the Moon', 'e2', 'desert']);
+  assert.deepEqual(spec.places.map((p) => [p.name, p.kind]), [['The Rocket', 'tower'], ['The Moon Castle', 'fortress'], ['The Dragon Friend', 'landmark']]);
+  // laid where they stand in their world: west to east as there
+  const drawn = drawAtlas(spec);
+  const at = Object.fromEntries(drawn.spots.map((s) => [s.id, s]));
+  assert.deepEqual(Object.keys(at).sort(), ['e1', 'e2', 'e3', 'e4']);
+  assert.ok(at.e1.x < at.e3.x && at.e3.x < at.e4.x, JSON.stringify(drawn.spots));
+  assert.ok(at.e2.area && !at.e1.area);
+  for (const s of drawn.spots) assert.ok(s.x > 0 && s.x < drawn.W && s.y > 0 && s.y < drawn.H, JSON.stringify(s));
+  assert.match(drawn.svg, /^<svg /);
+  assert.match(drawn.svg, />THE GREY SURFACE OF THE MOON</);
+  assert.match(drawn.svg, />The Moon Castle</);
+  // a world on water: a shore round a lake, and what stands there on the shore
+  const lake = atlasSpec({ title: 'Moon’s world', things: [{ id: 'e1', name: 'the night ferry', kind: 'thing', xy: [800, 500] }], scene: { ...scene, place: 'A moonlit lake', ground: { kind: 'water', far: '#223344', near: '#334455' } } });
+  assert.equal(lake.shape, 'inland-sea');
+  assert.equal(lake.places[0].near, 'coast');
+  // the same world, the same map; a thing moved, drawn again
+  assert.equal(mapSign(spec), mapSign(atlasSpec({ title: 'Star’s world', chapters: 3, things, scene, seed: 7 })));
+  assert.notEqual(mapSign(spec), mapSign(atlasSpec({ title: 'Star’s world', chapters: 3, things: [{ ...things[0], xy: [900, 600] }, ...things.slice(1)], scene, seed: 7 })));
+  assert.equal(markOf('the night ferry'), 'port');
+  assert.equal(markOf('a lantern'), 'tower');
+  assert.equal(titleOf('a flag on the moon'), 'A Flag on the Moon');
+  // the map grows round the thing chosen, where it is on the screen
+  const on = onScreen({ x: 100, y: 200 });
+  assert.deepEqual(on, { x: Math.round(MAP.x + 100 * MAP.k), y: Math.round(MAP.y + 200 * MAP.k) });
+  assert.deepEqual(zoomInto({ x: 100, y: 200 }), { origin: `${on.x}px ${on.y}px`, scale: MAP.zoom });
+});
+
+test('their world painted as one, and its map, are kept where no thing of theirs is (a thing is kept as minus its number)', () => {
+  for (const key of [COMPOSED, MAPPED]) {
+    assert.ok(!Number.isInteger(key) && key < 0 && key > -1, String(key));
+  }
+  assert.notEqual(COMPOSED, MAPPED);
+});

@@ -14,6 +14,7 @@
 
 import { checkIllustration, ILLUSTRATE } from './engine/dreams/index.mjs';
 import { BadRequest } from './errors.mjs';
+import { checkStyle, withStyle } from './style.mjs';
 
 export const REAL = {
   model: 'amazon.nova-canvas-v1:0',
@@ -80,7 +81,9 @@ export function checkReal(body) {
   const young = body.young === true;
   const look = Object.hasOwn(LOOKS, body.look) ? body.look : young ? 'film' : 'real';
   const seed = Math.max(0, Math.min(REAL.seeds, Math.round(Number(body.seed) || 0)));
-  return { image: { type: m[1], data: m[2] }, brief: { title: clean(b.title, ILLUSTRATE.title), lines, things }, young, look, seed };
+  // the look their world's place is painted in, if it has one: the picture is painted in it too
+  const place = clean(body.place, 160) || null;
+  return { image: { type: m[1], data: m[2] }, brief: { title: clean(b.title, ILLUSTRATE.title), lines, things }, young, look, seed, place, style: checkStyle(body.style) };
 }
 
 // The Illustrator's request: their painting, seen, and the brief
@@ -103,8 +106,9 @@ const cap = (t) => String(t || '').charAt(0).toUpperCase() + String(t || '').sli
 const lookSaid = ({ rule = null, look = null }) => [rule, look].filter(Boolean).map((x) => String(x).replace(/[.\s]+$/, '')).join('; ');
 // Nova Canvas's request: text to image, held to the edges of their ink. The prompt is the look, the
 // scene, and how each thing looks, as many as fit.
-export function realRequest({ image, scene, looks = [], young = false, look = 'real', seed = 0 }) {
-  const parts = [LOOKS[look] || LOOKS.real, scene];
+export function realRequest({ image, scene, looks = [], young = false, look = 'real', seed = 0, place = null }) {
+  // in their world's own look, so it is of a piece with its place and the things standing there
+  const parts = [place ? `${cap(String(place).replace(/[.\s]+$/, ''))}.` : LOOKS[look] || LOOKS.real, scene];
   const room = REAL.text - (young ? GENTLE.length + 1 : 0);
   // a thing they said the look of in their own words, first, so theirs are never what is left out
   for (const l of [...looks.filter((x) => x.rule), ...looks.filter((x) => !x.rule)]) {
@@ -150,7 +154,7 @@ export async function real(body, { claude, paint = null, budget = null, model, l
   }
   if (!ill.ok) return { status: 502, json: { error: 'the Illustrator had nothing to paint' } };
   try {
-    const out = String(await paint(realRequest({ image: r.image.data, scene: ill.scene, looks: ill.looks, young: r.young, look: r.look, seed: r.seed })) || '');
+    const out = String(await paint(withStyle(realRequest({ image: r.image.data, scene: ill.scene, looks: ill.looks, young: r.young, look: r.look, seed: r.seed, place: r.place }), r.style)) || '');
     if (!/^[A-Za-z0-9+/=]{100,}$/.test(out)) throw new Error('no picture came back');
     if (out.length > REAL.most) { log(`dream it real: too big to send (${out.length})`); return { status: 200, json: { off: true, big: true } }; }
     return { status: 200, json: { image: `data:image/${out.startsWith('/9j/') ? 'jpeg' : 'png'};base64,${out}`, scene: ill.scene, looks: ill.looks } };
@@ -200,7 +204,7 @@ export function checkThing(body) {
   if (height > 4 * width) height = width * 4;
   return {
     image: m[2], name, look: clean(body.look, THING.look) || null, rule: clean(body.rule, THING.rule) || null, place: clean(body.place, THING.place) || null, reference,
-    young: body.young === true, seed: Math.max(0, Math.min(REAL.seeds, Math.round(Number(body.seed) || 0))), width, height,
+    young: body.young === true, seed: Math.max(0, Math.min(REAL.seeds, Math.round(Number(body.seed) || 0))), width, height, style: checkStyle(body.style),
   };
 }
 
@@ -251,7 +255,7 @@ export async function thing(body, { paint = null, budget = null, log = () => {},
   if (!paint) return { status: 200, json: { off: true } };
   if (budget && !(await budget.take(Date.now(), { share: THING.share }))) { log('a thing, made real: no pictures left today'); return { status: 200, json: { off: true, today: true } }; }
   try {
-    const out = String(await paint(thingRequest(t)) || '');
+    const out = String(await paint(withStyle(thingRequest(t), t.style)) || '');
     if (!/^[A-Za-z0-9+/=]{100,}$/.test(out)) throw new Error('no picture came back');
     if (out.length > THING.big) { log(`a thing, made real: too big to send (${out.length})`); return { status: 200, json: { off: true, big: true } }; }
     const cut = cutout ? await cutOut(out, { paint, budget, log }) : null;

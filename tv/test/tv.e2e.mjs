@@ -1267,7 +1267,7 @@ try {
       return { family: localStorage.getItem('inkwash.family'), moon: JSON.parse(localStorage.getItem('inkwash.world')).nights.length, keys };
     });
     assert(own.family === before && own.moon === 2, JSON.stringify(own));
-    assert(JSON.stringify(own.keys.filter((k) => !/(^|:)(0|-\d+)$/.test(String(k)))) === JSON.stringify([1, 2, 'demo-p1:1', 'demo-p1:2', 'demo-p1:3', 'demo-p2:1', 'demo-p2:2', 'demo-p2:3', 'p2:1']), JSON.stringify(own.keys));
+    assert(JSON.stringify(own.keys.filter((k) => !/(^|:)(0|-\d+(\.\d+)?)$/.test(String(k)))) === JSON.stringify([1, 2, 'demo-p1:1', 'demo-p1:2', 'demo-p1:3', 'demo-p2:1', 'demo-p2:2', 'demo-p2:3', 'p2:1']), JSON.stringify(own.keys));
   });
 
   await check('their world at night, each thing where it first came, in its own light; walked through, OK to each thing in turn, ▶‖ its nights as they were told, Back home; and the TV at rest shows their paintings at night', async () => {
@@ -1587,6 +1587,34 @@ try {
     const home = await tv(() => ({ a: window.__inktv.atlas, kept: JSON.parse(localStorage.getItem('inkwash.demo.visits')) }));
     assert(home.a.visiting.length === 0 && !home.a.things.includes('the night ferry') && home.kept.length === 0, JSON.stringify(home));
     await pressKey('Escape');
+  });
+
+  await check('their world opens on its map: their world seen from above as a hand-inked atlas, its own place the land and each thing on it where it stands; ◀ ▶ go along the story, OK grows the map round one until it is their world there; Back is the map again, and then the seals', async () => {
+    await page.goto(`${base}?guide=http://localhost:${GUIDE}&pace=fast&demo&map&quiet=0`);
+    await page.waitForFunction(() => window.__inktv && window.__inktv.mode === 'who', null, { timeout: 15000 });
+    await pressKey('Enter');
+    await page.waitForFunction(() => window.__inktv.worldmap, null, { timeout: 15000 });
+    const m = await tv(() => ({ m: window.__inktv.worldmap, hints: document.querySelector('#hints').textContent }));
+    assert(JSON.stringify(m.m.regions) === '["THE LAKE AT NIGHT"]', `one land, their world's own place: ${JSON.stringify(m.m.regions)}`);
+    assert(['The Night Ferry', 'The Lantern', 'The Pier', 'The Bridge', 'MOON’S WORLD'].every((x) => m.m.names.includes(x)), JSON.stringify(m.m.names));
+    assert(m.m.places.length === 4 && m.m.card.toLowerCase() === m.m.at.toLowerCase(), JSON.stringify(m.m));
+    assert(JSON.stringify(m.m.actions) === '["Go there","Draw what happens here","Read your book"]' && /another place/.test(m.hints) && /the seals/.test(m.hints), JSON.stringify(m));
+    await shot('tv-map-your-world.png');
+    await pressKey('ArrowRight');
+    const to = (await tv(() => window.__inktv.worldmap)).at;
+    assert(to !== m.m.at, `${to} after ${m.m.at}`);
+    await pressKey('Enter');
+    await page.waitForFunction(() => !window.__inktv.worldmap && window.__inktv.atlas, null, { timeout: 8000 });
+    const there = await tv(() => window.__inktv.atlas);
+    assert(there.card.toLowerCase() === to.toLowerCase(), `${there.card} for ${to}`);
+    // a question of how it looks may be asked as it opens: kept as it is
+    if (there.look || (there.actions || []).includes('Keep it as it is')) await pressKey('Escape');
+    assert(/the map/.test(await tv(() => document.querySelector('#hints').textContent)), 'Back is the map');
+    await pressKey('Escape');
+    await page.waitForFunction(() => window.__inktv.worldmap, null, { timeout: 8000 });
+    assert((await tv(() => window.__inktv.worldmap.at)) === to, 'back over the place it was at');
+    await pressKey('Escape');
+    assert((await tv(() => window.__inktv.mode)) === 'who', 'and then the seals');
   });
 
   await check('no errors in the page, and nothing fetched from outside it', async () => {
