@@ -6,7 +6,7 @@ Anthropic's API, entry 15) tells each drawing back as a story in Amazon Polly's 
 model makes a drawing real: Amazon Nova Canvas, until AWS retired it (entry 15), and now Google's
 Gemini.
 Each entry says what we were doing, what happened, how we got past it, and what would have
-helped. Everything here we hit ourselves; where something is not yet verified on hardware or
+helped; entries 16 to 19, from the simulator run, also give a severity. Everything here we hit ourselves; where something is not yet verified on hardware or
 against the real services, it says so.
 
 ## Vega OS and the Vega SDK
@@ -21,7 +21,7 @@ against the real services, it says so.
   it run.
 - **Got past it:** we tested the app's page in desktop Chromium at 1920 × 1080, driven by
   simulated remote key events, including the packaged single file opened from `file://` as the
-  WebView loads it. The first run on a real device is still ahead of us.
+  WebView loads it, then rented an Apple Silicon Mac for the simulator (entry 1a).
 - **Would have helped:**
   - the KVM requirement stated before the install steps, not discovered after;
   - a lighter, software-only preview of the WebView runtime for headless CI;
@@ -38,8 +38,8 @@ against the real services, it says so.
   /com.amazon.vega.webview_3@IWebview_3`). Inkwash's Vega app is a WebView around its page, so on
   our machines there was no simulator it could run in, even with KVM (entry 1). We found this two
   days before the deadline, on the troubleshooting page, not on the WebView or install pages.
-- **Got past it:** not yet: the video has to be made on an Apple Silicon Mac or a Fire TV Stick 4K
-  Select.
+- **Got past it:** we rented an Apple Silicon Mac (an M4) for a day and ran it in the Vega Virtual
+  Device there; the demo video was recorded in it (entries 16 to 18).
 - **Would have helped:**
   - the platforms that can run a WebView app named on the WebView quick-start and the install page,
     and in the hackathon's resources, since the Fire TV track invites web apps;
@@ -225,8 +225,61 @@ against the real services, it says so.
 - **Would have helped:** a retirement notice in the console next to a model we were calling, a
   named successor for each retired model, and the use-case form's answer, or Bedrock's refusal,
   saying why and what a new account needs.
-- **Not yet verified:** Gemini and Anthropic's API are tested against stand-ins, not yet called
-  for real from the story server.
+- **Since verified:** Claude through Anthropic's API and Gemini's pictures ran live from the
+  deployed story server on 22 and 23 October; Bedrock still hasn't.
+
+## In the Vega Virtual Device (added after the run, 23 October)
+
+Severity: **High** blocks the task, **Medium** costs hours, **Low** costs minutes.
+
+### 16. Remote-desktop keys never reach the app; the device's own input tool does
+
+- **Doing:** driving the app in the Vega Virtual Device on a rented Mac from another computer, to
+  record the demo (the Mac was in a data centre; we reached it over VNC).
+- **Expected:** keys typed into the simulator window over screen sharing arrive as remote buttons.
+- **What happened:** they never reached the app. Mouse clicks over VNC didn't register in the
+  simulator either. Typing at the Mac itself is the only documented way to press its buttons.
+- **Got past it:** `vega device run-cmd -c "inputd-cli button_press KEY_ENTER"` presses a remote
+  button on the device itself, and `--holdDuration <ms>` holds one, which our brush needs (a held
+  ▼ makes the ink glow). Every frame of our video was driven this way, scripted.
+- **Severity:** High for anyone working remotely, as Apple Silicon Macs are mostly rented.
+- **Suggestion:** document `inputd-cli` (its key names, `KEY_RIGHT`, `KEY_PLAYPAUSE`, `KEY_BACK`,
+  and the hold option) on the simulator page, as the supported way to script a test or a demo.
+
+### 17. `vega device launch-app` asks macOS for Automation access the first time
+
+- **Doing:** launching the app from a terminal on the Mac.
+- **What happened:** the first launch opened two macOS prompts, letting Terminal control the
+  simulator app and System Events, and waited. Over SSH or in a script nothing shows them, so the
+  launch just hangs; on screen, they landed in the middle of our first recorded take.
+- **Got past it:** clicked Allow once on the Mac's screen; `vega device run-cmd -c "vlcm launch-app
+  pkg://<app id>"` launches without it.
+- **Severity:** Medium.
+- **Suggestion:** say so in the simulator's setup steps, or launch without needing Automation.
+
+### 18. A Lambda function URL's CORS setting plus the function's own headers break every reply
+
+- **Doing:** calling the story server from the TV's page in a browser, after the first full deploy.
+- **What happened:** every call failed with "Failed to fetch". The SAM template gave the function
+  URL a `Cors` block, and the function also answered `OPTIONS` and set its own CORS headers, so
+  each reply carried two `Access-Control-Allow-Origin` values, which browsers refuse. Nothing in
+  the deploy, the console or the logs said so; the request succeeded on the server.
+- **Got past it:** removed the template's `Cors` block; the function answers CORS alone.
+- **Severity:** High (nothing worked), quick once found.
+- **Suggestion:** a warning in SAM or the Lambda console when a function URL with CORS configured
+  returns its own `Access-Control-Allow-Origin`.
+
+### 19. A 3D splat world drew black in the simulator's WebView
+
+- **Doing:** *Walk inside*: a World Labs world (about 100,000 soft points, drawn with three.js and
+  Spark) opened in the WebView.
+- **What happened:** WebGL2 was there (the simulator reports ANGLE over the Mac's GPU), the file
+  loaded, and the render loop ran (about 1,700 frames), but every frame was black. The same code
+  and file draw in Brave on a laptop's GPU.
+- **Got past it:** not yet; it is left out of the video and the submission.
+- **Severity:** Medium (one feature).
+- **Suggestion:** a note on which WebGL2 features the simulator's WebView supports, and how it
+  differs from a Fire TV stick, so a web developer knows which to trust.
 
 ## What we would ask for first
 
@@ -236,3 +289,4 @@ against the real services, it says so.
 4. Short Nova Reel clips returned inline, or each job's exact key (entry 12).
 5. A successor named for each retired Bedrock model, shown where it is called, and a reason when a
    new account can't reach Bedrock's models (entry 15).
+6. `inputd-cli` documented as the way to script the simulator's remote (entry 16).
