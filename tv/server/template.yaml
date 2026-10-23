@@ -182,11 +182,9 @@ Resources:
           GUIDE_AI_OPT_OUT: !Ref AIOptOut
       FunctionUrlConfig:
         AuthType: NONE
-        Cors:
-          AllowOrigins: ['*']
-          AllowMethods: [GET, POST]
-          AllowHeaders: [content-type, x-inkwash-key]
-          MaxAge: 600
+        # No Cors block here: lambda.mjs answers OPTIONS and sets the CORS headers itself, and the
+        # function URL adding its own made every reply carry two Access-Control-Allow-Origin
+        # values, which a browser refuses.
 
   # What the guide may do. Its own role, so the budget's action can take Bedrock and Polly away.
   GuideRole:

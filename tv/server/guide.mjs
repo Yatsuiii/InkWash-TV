@@ -15,6 +15,7 @@
 //   POST /speak     { text, rate?, volume?, pause? }  ->  { audio }
 //   POST /wonder    { brief, young? }  ->  { about, name, question, choices }: the Worldbuilder
 //                   (worldbuilder.mjs) asks one question about their world
+//   POST /write     { text, young?, seed? }  ->  { title, feeling, lines, image? }: a story from words alone (writer.mjs)
 //   POST /real      { image, brief, young?, look?, seed? }  ->  { image, scene, looks }: the
 //                   Illustrator (illustrator.mjs) makes a told painting real
 //   POST /wide      { image, mask, scene?, look?, young?, seed? }  ->  { image }: all around it
@@ -71,6 +72,7 @@ import { BadRequest } from './errors.mjs';
 import { real, thing } from './illustrator.mjs';
 import { wide } from './wide.mjs';
 import { scenery, backdrop, compose } from './scenery.mjs';
+import { write } from './writer.mjs';
 
 export const MODELS = {
   // a remark has to come back while the painter is still pausing: the fast model. It also offers
@@ -520,6 +522,7 @@ export async function handle(path, body, { claude, speak = async () => null, pai
       if (marble && r.json && r.json.image) r.json.walk = true;
       return r;
     }
+    if (path === '/write') return await write(body, { claude, paint, budget, model: models.tell, log });
     if (path === '/scene') return await scenery(body, { claude, model: models.scene || models.remark, log });
     if (path === '/backdrop') return await backdrop(body, { paint, budget, log });
     if (path === '/compose') return await compose(body, { paint, budget, log });

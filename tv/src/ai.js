@@ -17,6 +17,7 @@
 //   /backdrop  { scene, image, young, seed }  ->  { image } (or { off } or { blocked }): the place
 //   /compose   { scene, image, young, seed }  ->  { image } (or { off } or { blocked }): their world as one painting
 //              painted from its scene, held to the TV's drawing of it (`image`)
+//   /write     { text, young, seed }  ->  { title, feeling, lines, image? }: a story from words alone
 //   /thing     { image, name, look, rule, place, young, seed, width, height, reference }  ->  { image,
 //              cut } (or { off } or { blocked }): one thing of their world painted on its own, on
 //              white, from its strokes, as they said it looks (`rule`), or made again from the
@@ -79,6 +80,8 @@ export function createAI({ endpoint, key = null, fetchImpl = (...a) => fetch(...
     backdrop: (body) => post('/backdrop', body, 90000),
     // their world painted as one: the TV's view of it, its things set in, repainted together
     compose: (body) => post('/compose', body, 90000),
+    // a story from words alone, and one picture painted from them (server/writer.mjs; a while)
+    write: (body) => post('/write', body, 110000),
     thing: (body) => post('/thing', body, 90000),
     // it comes alive: asked for, then looked in on until it is made (server/reel.mjs)
     alive: (body) => post('/alive', body, 30000),

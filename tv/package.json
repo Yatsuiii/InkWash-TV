@@ -6,11 +6,11 @@
   "type": "module",
   "scripts": {
     "start": "node scripts/serve.mjs",
-    "test": "node --test test/logic.test.mjs",
+    "test": "node --test test/logic.test.mjs test/writestory.test.mjs",
     "e2e": "node test/tv.e2e.mjs",
     "bundle": "node scripts/bundle.mjs",
     "e2e:bundle": "node scripts/bundle.mjs && TV_URL=file://$PWD/dist/inkwash-tv.html node test/tv.e2e.mjs",
-    "vega:assets": "node scripts/bundle.mjs && cp dist/inkwash-tv.html vega/assets/index.html",
+    "vega:assets": "node scripts/bundle.mjs && mkdir -p vega/assets && cp dist/inkwash-tv.html vega/assets/index.html",
     "demo": "node scripts/demo.mjs"
   },
   "devDependencies": {

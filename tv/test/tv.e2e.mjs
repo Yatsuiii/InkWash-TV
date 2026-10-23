@@ -258,7 +258,7 @@ try {
     assert(p.mode === 'atlas' && p.who.painter.name === 'Moon' && !p.who.painter.young && p.seal === 'Moon', JSON.stringify(p));
     assert(p.family.painters.length === 1 && p.family.painters[0].first === true, JSON.stringify(p.family));
     // their world, empty, opens first; the ink waits on the felt until there is painting to do
-    assert(p.world.title === 'Moon’s world' && /^Hello, Moon\. Nothing in it yet\./.test(p.world.about) && JSON.stringify(p.world.actions) === '["Draw the first thing in it"]' && p.dishes === '0', JSON.stringify(p));
+    assert(p.world.title === 'Moon’s world' && /^Hello, Moon\. Nothing in it yet\./.test(p.world.about) && JSON.stringify(p.world.actions) === '["Draw the first thing in it","Write a story instead"]' && p.dishes === '0', JSON.stringify(p));
     await shot('tv-0b-an-empty-world.png');
     await inWorld('Draw the first thing in it');
     assert((await tv(() => window.__inktv.mode)) === 'paint', 'to the paper');
@@ -707,7 +707,7 @@ try {
     assert(chose.brief.look === 'A moonlit ink-wash night', JSON.stringify(chose.brief));
     const looked = await tv(() => ({ look: window.__inktv.placeScene.look, looks: window.__inktv.placeScene.looks, actions: window.__inktv.atlas.actions, all: window.__inktv.atlas.all, kept: JSON.parse(localStorage.getItem('inkwash.world')).scene }));
     assert(looked.look === 'A moonlit ink-wash night' && !looked.looks.includes(looked.look) && looked.kept.look === looked.look, JSON.stringify(looked));
-    assert(JSON.stringify(looked.all) === '["Draw something new","Walk through your world","What’s out there?","How it looks","Say how the night ferry looks","Draw more of the night ferry","Read your book","Forget the night ferry"]' && JSON.stringify(looked.actions) === '["Draw something new","Walk through your world","What’s out there?","More…"]', JSON.stringify(looked));
+    assert(JSON.stringify(looked.all) === '["Draw something new","Write a story instead","Walk through your world","What’s out there?","How it looks","Say how the night ferry looks","Draw more of the night ferry","Read your book","Forget the night ferry"]' && JSON.stringify(looked.actions) === '["Draw something new","Write a story instead","Walk through your world","More…"]', JSON.stringify(looked));
     await page.waitForFunction(() => window.__inktv.placePainted, null, { timeout: 10000 });
     const paintedAs = asked.filter((a) => a.path === '/backdrop');
     assert(paintedAs.length === 1 && paintedAs[0].scene.look === 'A moonlit ink-wash night', JSON.stringify(paintedAs.map((a) => a.scene && a.scene.look)));
@@ -839,7 +839,7 @@ try {
     assert(/^Kept in your world: The night ferry goes to an island of lanterns\./.test(kept.about) && kept.lore === 'The night ferry goes to an island of lanterns.', JSON.stringify(kept));
     const chosen = kept.saved.facts.find((f) => f.source === 'chosen');
     assert(chosen && chosen.entity === 'e1' && chosen.from === 2 && kept.saved.wonders.length === 1 && kept.saved.wonders[0].chose === chosen.text, JSON.stringify(kept.saved.wonders));
-    assert(JSON.stringify(kept.all) === '["Draw something new","Walk through your world","What’s out there?","How it looks","Draw more of the night ferry","Read your book","Forget the night ferry"]' && JSON.stringify(kept.actions) === '["Draw something new","Walk through your world","What’s out there?","More…"]', JSON.stringify(kept));
+    assert(JSON.stringify(kept.all) === '["Draw something new","Write a story instead","Walk through your world","What’s out there?","How it looks","Draw more of the night ferry","Read your book","Forget the night ferry"]' && JSON.stringify(kept.actions) === JSON.stringify(kept.all), JSON.stringify(kept));
     await inWorld('Draw something new');
     await page.evaluate(() => new Promise((ok) => { let n = 0; const f = () => (++n >= 20 ? ok() : requestAnimationFrame(f)); requestAnimationFrame(f); }));
     await stroke(300, 650, 0, 1500);
@@ -1177,7 +1177,7 @@ try {
     assert(m.home.about === 'Welcome back, Moon. This is chapter 4 of your world.' && m.world.nights === 3, JSON.stringify(m));
     // previously in Moon's world: last time's story, two days ago, the first thing offered in it
     // three things to do on screen, and the rest under More…
-    assert(JSON.stringify(m.home.all) === '["Hear last time’s story","Draw something new","Walk through your world","What’s out there?","How it looks","Draw more of the night ferry","Send the night ferry to Star’s world","Read your book","Forget the night ferry"]' && JSON.stringify(m.home.actions) === '["Hear last time’s story","Draw something new","Walk through your world","More…"]' && m.home.k === 0, JSON.stringify(m.home));
+    assert(JSON.stringify(m.home.all) === '["Hear last time’s story","Draw something new","Write a story instead","Walk through your world","What’s out there?","How it looks","Draw more of the night ferry","Send the night ferry to Star’s world","Read your book","Forget the night ferry"]' && JSON.stringify(m.home.actions) === '["Hear last time’s story","Draw something new","Write a story instead","More…"]' && m.home.k === 0, JSON.stringify(m.home));
     await page.waitForFunction(() => window.__inktv.atlas && window.__inktv.atlas.pictures === 4, null, { timeout: 20000 });
     // each thing of Moon's world made real on its own, from its strokes, as it looks, alone on white;
     // the white cut away, it stands in Moon's world in place of its strokes
@@ -1280,6 +1280,9 @@ try {
     assert(at.title === 'Star’s world' && JSON.stringify(at.things) === '["the rocket","the moon","the moon castle","the dragon friend"]' && at.card === 'The rocket', JSON.stringify(at));
     const moon = at.nodes.find((x) => x.name === 'the moon'), rocket = at.nodes.find((x) => x.name === 'the rocket');
     assert(moon.x > rocket.x && moon.y < rocket.y, `where Star painted them: ${JSON.stringify(at.nodes)}`);
+    // the hellos come one after another, 300 ms after their world opens and 150 ms apart: wait for
+    // all four, or on a quick machine the ← below comes first and its hop is counted alone
+    await page.waitForFunction(() => Object.values(window.__inktv.atlas.hops).filter((n) => n >= 1).length === 4, null, { timeout: 5000 });
     await pressKey('ArrowLeft');
     assert((await tv(() => window.__inktv.atlas.card)) === 'The dragon friend', 'a card at a time');
     // each thing said hello with a hop as their world opened; the one gone to hops again, with a sound of its own

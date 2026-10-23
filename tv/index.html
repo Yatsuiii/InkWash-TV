@@ -96,6 +96,33 @@
   /* walking inside the world built from their picture (realwalk.js): it fills the screen, under the hints */
   #realwalk { position: absolute; inset: 0; z-index: 2050; background: #05060d; }
   #realwalk .view { position: absolute; inset: 0; }
+  /* a story from words alone (writestory.js): over the world, under the hints */
+  #write { position: absolute; inset: 0; z-index: 2050; overflow: hidden; background: radial-gradient(ellipse at 50% 30%, #1b2347 0%, #0a0d1f 70%); color: var(--moon); }
+  #write .wr-ask { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; padding-top: 70px; text-align: center; }
+  #write h2 { margin: 0; font: 700 64px Alegreya, Georgia, serif; }
+  #write .sub { margin: 10px 0 0; font: italic 400 30px Alegreya, Georgia, serif; opacity: 0.85; max-width: 1100px; }
+  #write .wr-qr { margin-top: 26px; display: flex; flex-direction: column; align-items: center; }
+  #write .wr-qr svg { border-radius: 14px; }
+  #write .code { margin: 10px 0 0; font: 700 38px "Alegreya Sans", Arial, sans-serif; letter-spacing: 0.3em; color: var(--gold); }
+  #write .small { margin: 6px 0 0; font: 400 24px "Alegreya Sans", Arial, sans-serif; opacity: 0.75; }
+  #write .or { margin: 22px 0 10px; font: italic 400 26px Alegreya, Georgia, serif; opacity: 0.7; min-height: 30px; }
+  #write .wr-ideas { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+  #write .wr-ideas li { font: 400 30px "Alegreya Sans", Arial, sans-serif; padding: 10px 34px; border-radius: 999px; border: 2px solid rgba(244, 238, 224, 0.25); }
+  #write .wr-ideas li.on { background: #f4eee0; color: #1c1e24; border-color: #f4eee0; }
+  #write .wr-wait { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+  #write .wr-wait p { margin: 0; font: italic 400 48px Alegreya, Georgia, serif; }
+  #write .wr-wait .small { margin-top: 18px; max-width: 1100px; font: 400 28px "Alegreya Sans", Arial, sans-serif; }
+  #write .wr-story { position: absolute; inset: 0; background: linear-gradient(160deg, var(--a), var(--b)); }
+  #write .wr-story .pic { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transform: scale(1.07); animation: wr-drift 40s ease-out forwards; }
+  #write .wr-story .pic.late { opacity: 0; animation: wr-drift 40s ease-out forwards, wr-in 1.4s ease-out forwards; }
+  @keyframes wr-in { to { opacity: 1; } }
+  #write .wr-story .pic.plain { background: radial-gradient(ellipse at 50% 60%, var(--b), var(--a)); }
+  #write .wr-story .veil { position: absolute; left: 0; right: 0; bottom: 0; height: 360px; background: linear-gradient(to top, rgba(2, 3, 10, 0.92) 28%, rgba(2, 3, 10, 0)); }
+  #write .wr-story .caption { position: absolute; left: 50%; bottom: 120px; transform: translateX(-50%); width: 1380px; text-align: center; }
+  #write .wr-story .name { margin: 0; font: 700 22px "Alegreya Sans", Arial, sans-serif; letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold); }
+  #write .wr-story .line { margin: 12px 0 0; font: italic 400 46px/1.25 Alegreya, Georgia, serif; text-shadow: 0 2px 14px rgba(0, 0, 0, 0.7); }
+  #write .wr-story .count { margin: 10px 0 0; font: 400 22px "Alegreya Sans", Arial, sans-serif; opacity: 0.6; }
+  @keyframes wr-drift { from { transform: scale(1.07); } to { transform: scale(1.15); } }
   /* all around it: the panorama full height, looked across with the remote (wide.js) */
   #wide { position: absolute; inset: 0; z-index: 2050; overflow: hidden; background: #05060d; }
   #wide img { position: absolute; left: 0; top: 0; height: 100%; width: auto; max-width: none; will-change: transform; }
@@ -633,6 +660,7 @@
   </div>
   <section id="inside" hidden aria-live="polite"></section>
   <section id="realwalk" hidden aria-label="Inside your world"><div class="view"></div></section>
+  <section id="write" hidden aria-label="Write a story"></section>
   <section id="wide" hidden aria-label="All around it"><img alt=""></section>
   <ol id="dishes" aria-label="Ink">
     <li data-ink="dense"><span class="dish"></span><span class="name">White</span></li>

@@ -69,7 +69,7 @@ const CORS = {
 // what the phone may call without the TV's key: its page, and saying and listening by code
 const PHONE_CALLS = new Set(['/words', '/asked']);
 // what costs money: a model, a voice or a picture
-const PAID = new Set(['/remark', '/readings', '/tell', '/agent', '/wonder', '/real', '/speak', '/scene', '/backdrop', '/compose', '/thing', '/wide', '/alive', '/world']);
+const PAID = new Set(['/remark', '/readings', '/tell', '/agent', '/wonder', '/real', '/speak', '/scene', '/backdrop', '/compose', '/write', '/thing', '/wide', '/alive', '/world']);
 // pictures by Gemini: a key is set, and pictures aren't off
 const byGemini = () => process.env.GUIDE_REAL !== 'off' && !!process.env.GUIDE_GEMINI_KEY;
 // Claude through Anthropic's own API: a key is set

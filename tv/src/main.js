@@ -26,6 +26,7 @@ import { getGlow } from './glow.js';
 import { replayPlan, replayAt, createDial, createFeeling } from './feel.js';
 import { loadWorld, putWorld, tonightOf, welcomeOf, keptOf, sitter, keepWorld, loadApart, apartKeys, roomOf, roomSays } from './world.js';
 import { createPhone, qrSvg } from './phone.js';
+import { createWriter } from './writestory.js';
 import { runGuide, stepOf } from './agent.js';
 import { SHEET as PANORAMA, nextLook, LOOK_NAMES, versionLabel, isVersionLabel, panStep, panOffset, MORE, foldChoices } from './wide.js';
 import { createTools, firstMessage, laterMessage, briefFor, createRenderer, finalTelling } from './harness.js';
@@ -85,7 +86,7 @@ let sky = null, life = null, inside = null;
 // who is painting, of the painters on this TV
 let family = null, painter = null;
 // the screen read aloud, for a child: the guide's questions, each choice as they reach it, its tips
-let aloud = null;
+let aloud = null, writer = null, writeWas = '';
 const readsAloud = () => !!(aloud && painter && painter.young);
 const young = () => !!(painter && painter.young);
 const governor = createGovernor();
@@ -179,6 +180,7 @@ function updateHints() {
   else if (state.mode === 'feel') html = `<span>${KEY('◀')}${KEY('▶')}choose</span><span>${KEY('OK')}tell it</span><span>${KEY('Back')}back to drawing</span>`;
   else if (state.mode === 'guide') html = `<span>${KEY('Back')}back to drawing</span>`;
   else if (state.mode === 'offer') html = `<span>${KEY('◀')}${KEY('▶')}choose</span><span>${KEY('OK')}choose</span><span>${KEY('Back')}${state.offer && state.offer.more ? 'back' : state.offer && state.offer.recap ? 'not now' : state.offer && state.offer.after ? 'a clean sheet' : 'that’s the end'}</span>`;
+  else if (state.mode === 'write') html = writeHints();
   else if (state.mode === 'wide') html = `<span>${KEY('◀')}${KEY('▶')}look around</span><span>${KEY('Back')}back to your picture</span>`;
   else if (state.mode === 'realwalk') html = `<span>${KEY('▲')}${KEY('▼')}walk</span><span>${KEY('◀')}${KEY('▶')}turn</span><span>${KEY('Back')}back to your picture</span>`;
   else if (state.mode === 'inside') html = `<span>${KEY('◀')}${KEY('▶')}turn it round</span><span>${KEY('▲')}${KEY('▼')}nearer · further</span><span>${KEY('OK')}the next thing</span><span>${KEY('Back')}back to what you drew</span>`;
@@ -374,6 +376,7 @@ function heard(texts) {
     if (state.mode === 'atlas' && state.atlas && state.atlas.said) { sayLook(state.atlas, text.replace(/[.!?]+$/, '').slice(0, 160)); continue; }
     // how their world looks, in their own words
     if (state.mode === 'atlas' && state.atlas && state.atlas.look && !state.atlas.look.waiting) { changeLook(state.atlas, text.replace(/[.!?]+$/, '').slice(0, 160)); continue; }
+    if (state.mode === 'write' && writer) { writer.words(text); continue; }
     if (state.mode === 'tell' && state.tell && state.tell.agent) { state.tell.agent.words.push(text); continue; }
     const L = state.line;
     const n = state.mode === 'replay' && L ? (L.strokes[replayAt(L.plan, L.t).i]?.n ?? null) : brush.strokes.length || null;
@@ -439,6 +442,7 @@ function onPress(button, t) {
   if (state.mode === 'offer') return offerPress(button);
   if (state.mode === 'inside') return insidePress(button);
   if (state.mode === 'realwalk') return realWalkPress(button);
+  if (state.mode === 'write') return writer && writer.press(button);
   if (state.mode === 'wide') return widePress(button);
   if (state.mode !== 'paint') return;
   if (button !== 'back') state.freshArmed = -1e9;
@@ -1916,6 +1920,27 @@ function openWorld({ note = null, grew = false, map = false } = {}) {
   if (grew && state.endsOn === painter.id) { state.endsOn = null; wonderAtEnd(state.atlas); }
   else wonderStill(state.atlas);
 }
+// A story from words alone: the writer (writestory.js) takes the screen over the world, and Back
+// returns to the world as it was
+function openWrite(A) {
+  if (!writer) return;
+  state.mode = 'write';
+  state.writeFrom = A;
+  writer.open();
+  updateHints();
+}
+function closeWrite() {
+  state.mode = 'atlas';
+  state.writeFrom = null;
+  updateHints();
+}
+function writeHints() {
+  const st = writer ? writer.step : 'ask';
+  if (st === 'story') return `<span>${KEY('OK')}${writer.shown >= writer.story.lines.length ? 'write another' : 'next line'}</span><span>${KEY('◀')}back a line</span><span>${KEY('Back')}leave</span>`;
+  if (st === 'writing') return `<span>${KEY('Back')}leave</span>`;
+  if (st === 'error') return `<span>${KEY('OK')}try again</span><span>${KEY('Back')}leave</span>`;
+  return `<span>${KEY('◀')}${KEY('▶')}choose</span><span>${KEY('OK')}tell it</span>${phone && phone.listening ? '<span>or say it on your phone</span>' : ''}<span>${KEY('Back')}back to your world</span>`;
+}
 function closeWorld() {
   $('#atlas').hidden = true;
   state.atlas = null;
@@ -1934,6 +1959,7 @@ function worldActions(A) {
   return [
     ...(A.due ? [{ id: 'recap', text: 'Hear last time’s story' }] : []),
     { id: 'new', text: A.mine ? 'Draw something new' : 'Draw the first thing in it' },
+    ...(writer ? [{ id: 'write', text: 'Write a story instead' }] : []),
     ...(A.cards.length && A.night && A.night.canWalk ? [{ id: 'walk', text: 'Walk through your world' }] : []),
     ...(ai && A.cards.length ? [{ id: 'wonder', text: 'What’s out there?' }] : []),
     ...(ai && world && world.scene ? [{ id: 'looks', text: 'How it looks' }] : []),
@@ -2526,6 +2552,7 @@ function atlasPress(button) {
     if (a.id === 'wonder') return askWorldbuilder(A);
     if (a.id === 'looks') return openLook(A, world.scene, { asked: true });
     if (a.id === 'say-look') return openSaid(A, c);
+    if (a.id === 'write') return openWrite(A);
     if (a.id === 'walk') return startWalk(A);
     if (a.id === 'book') return openJournal(painter, { from: 'atlas' });
     if (a.id === 'forget') return openForget(A, c);
@@ -4215,6 +4242,7 @@ function frameOnce(t) {
   // looking across a panorama: the arrows held look that way
   if (state.mode === 'wide') { const held = remote.held(t); panWide(dt, (held.has('right') ? 1 : 0) - (held.has('left') ? 1 : 0)); }
   if (phone) { phone.tick(t / 1000, heard); updatePhone(); }
+  if (writer && state.mode === 'write') { writer.tick(); const ws = `${writer.step}${writer.shown}`; if (ws !== writeWas) { writeWas = ws; updateHints(); } }
   if (sky) sky.frame(dt, t / 1000);
   if (life) life.frame(t / 1000);
   ink.frame(dt);
@@ -4263,6 +4291,7 @@ async function boot() {
   guide = newGuide();
   aloud = createAloud({ speak: ai && ai.speak ? (b) => ai.speak(b) : null, audio: new Audio() });
   phone = createPhone({ ai });
+  writer = ai && ai.write ? createWriter({ ai, el: $('#write'), say: (t) => aloud.say(t), stop: () => aloud.stop(), qr: (u) => qrSvg(u, { size: 260 }), phone: () => phone, young, seed: (t) => realSeed(`write:${sitter()}:${t}`), style: () => styleOf(painter), onClose: closeWrite }) : null;
   if (phone) phone.pair().then(showPairing).catch(() => { phone = null; });
   family = loadFamily();
   // the worlds too big for localStorage, read from IndexedDB from now on; and the browser asked to
