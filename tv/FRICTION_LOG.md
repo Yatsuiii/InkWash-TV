@@ -6,12 +6,14 @@ Anthropic's API, entry 15) tells each drawing back as a story in Amazon Polly's 
 model makes a drawing real: Amazon Nova Canvas, until AWS retired it (entry 15), and now Google's
 Gemini.
 Each entry says what we were doing, what happened, how we got past it, and what would have
-helped; entries 16 to 19, from the simulator run, also give a severity. Everything here we hit ourselves; where something is not yet verified on hardware or
+helped, and how much it cost us: **High** blocked the task, **Medium** cost hours, **Low** minutes. Everything here we hit ourselves; where something is not yet verified on hardware or
 against the real services, it says so.
 
 ## Vega OS and the Vega SDK
 
 ### 1. The Vega Virtual Device would not boot without hardware virtualization
+
+- **Severity:** High.
 
 - **Doing:** running the app on the Vega Virtual Device, from a cloud Linux machine (our build
   machine).
@@ -28,6 +30,8 @@ against the real services, it says so.
   - or a hosted simulator.
 
 ### 1a. The simulator can't run a WebView app on Linux or an Intel Mac, and the SDK doesn't run on Windows
+
+- **Severity:** High.
 
 - **Doing:** planning the demo video, which must show the app on a Fire TV or the Fire TV/Vega
   simulator, from a Windows PC and a cloud Linux machine.
@@ -48,6 +52,8 @@ against the real services, it says so.
 
 ### 2. A packaged web page can't load ES modules or web fonts from `file://`
 
+- **Severity:** Medium.
+
 - **Doing:** packaging our web app inside the Vega app, loaded as
   `file:///pkg/assets/index.html`.
 - **What happened:** Chromium refuses module scripts and font files from `file://`, so the page
@@ -61,6 +67,8 @@ against the real services, it says so.
 
 ### 3. Back never reached the page until we found `allowSystemKeyEvents`
 
+- **Severity:** High.
+
 - **Doing:** making Back wash out the last stroke, the way an artist takes back a mark.
 - **What happened:** the system consumed Back. `GoBack` (key code 27) reaches the page only when
   the WebView's `allowSystemKeyEvents` prop is set.
@@ -71,6 +79,8 @@ against the real services, it says so.
 
 ### 4. Media buttons arrive by name or only by key code
 
+- **Severity:** Medium.
+
 - **Doing:** using ⏯ to tell the dream, and ⏪/⏩ to change the ink.
 - **What happened:** the media keys need `allowsDefaultMediaControl={false}`, or the WebView treats
   them as media controls. We couldn't tell from the docs whether they arrive as `MediaPlayPause` /
@@ -80,6 +90,8 @@ against the real services, it says so.
 - **Would have helped:** the same table as in entry 3.
 
 ### 5. Whether a held button repeats is not documented
+
+- **Severity:** Medium.
 
 - **Doing:** painting. Holding ▼ presses the brush harder, and a held arrow steers it, so we need
   to know how long a button is held.
@@ -92,6 +104,8 @@ against the real services, it says so.
 
 ### 6. The WebView loads HTTPS only, even from a developer's laptop
 
+- **Severity:** Medium.
+
 - **Doing:** pointing the TV app at a story server running on our own computer during
   development.
 - **What happened:** WebView 4.0.2 (React Native 0.83) loads HTTPS only unless the manifest
@@ -102,6 +116,8 @@ against the real services, it says so.
   start.
 
 ### 7. The voice needs a manifest service that's easy to miss
+
+- **Severity:** Medium.
 
 - **Doing:** playing the storyteller's voice (Polly audio) from the page.
 - **What happened:** audio from a WebView needs `com.amazon.audio.stream` (and
@@ -114,6 +130,8 @@ against the real services, it says so.
 ## Amazon Bedrock (Claude) and AWS
 
 ### 8. Claude Opus 5.5 rejects a conversation if a proxy re-serializes it
+
+- **Severity:** High.
 
 - **Doing:** running the storyteller as an agent: the TV runs the tool loop, and a Lambda function
   passes each turn to Claude on Bedrock.
@@ -130,6 +148,8 @@ against the real services, it says so.
 
 ### 9. Opus 5.5 refuses forced tool use
 
+- **Severity:** Low.
+
 - **Doing:** making sure the storyteller always ends by remembering the night.
 - **What happened:** `tool_choice` of `any` or `tool` returns a 400 on Opus 5.5.
 - **Got past it:** `auto`, plus a one-time reminder from the TV's loop if the storyteller stops without
@@ -138,6 +158,8 @@ against the real services, it says so.
   migration notes.
 
 ### 10. One agent turn can outlast Lambda's default timeout
+
+- **Severity:** Medium.
 
 - **Doing:** one turn of the storyteller, with Opus thinking at medium effort.
 - **What happened:** a long turn can run past a minute. Our first SAM template allowed 60 seconds,
@@ -151,6 +173,8 @@ against the real services, it says so.
 
 ### 11. Model and voice availability differ by region
 
+- **Severity:** Low.
+
 - **Doing:** deploying near our users, in Mumbai (`ap-south-1`).
 - **What happened:** Claude is served there through the global endpoint. Opus needs model access
   enabled per account (Haiku 4.5 is open to every account). Polly's neural voices differ by region.
@@ -160,6 +184,8 @@ against the real services, it says so.
   voices are available.
 
 ### 12. Nova Reel gives a clip back only through S3, and only later
+
+- **Severity:** Medium.
 
 - **Doing:** letting a picture made real come alive for six seconds, from a TV app that holds no AWS
   keys.
@@ -179,6 +205,8 @@ against the real services, it says so.
 
 ### 13. Nova Reel is in one region and takes one picture size
 
+- **Severity:** Low.
+
 - **Doing:** setting a Nova Canvas picture moving.
 - **What happened:** Nova Reel is offered in `us-east-1`, so wherever else the story server is
   deployed (we started in Mumbai, entry 11) its pictures can't come alive. And the picture it starts
@@ -192,6 +220,8 @@ against the real services, it says so.
 
 ### 14. A spending stop has to name Nova Reel's call on its own
 
+- **Severity:** Medium.
+
 - **Doing:** a hard stop on spending: once the day's or the month's budget is reached, a deny policy
   goes on the function's role.
 - **What happened:** denying `bedrock:InvokeModel` doesn't stop `bedrock:StartAsyncInvoke`, the
@@ -204,6 +234,8 @@ against the real services, it says so.
 
 ### 15. The image and video models we built on were retired, and Bedrock was closed to a new account
 
+- **Severity:** High.
+
 - **Doing:** turning the story server on for real in a new AWS account, two days before the deadline.
 - **What happened:** Amazon Nova Canvas, which made every picture (a drawing made real, a place, each
   thing, a panorama, its cut-out), and Nova Reel, which set a picture moving, reached end of life on
@@ -211,7 +243,9 @@ against the real services, it says so.
   image model nearest in kind on Bedrock, Titan Image Generator v2, had reached its end on 30 June
   2026. Separately, Claude on Bedrock first needs Anthropic's one-time use-case form, and for our
   account it answered "not authorized"; then none of Bedrock's models could be reached from our
-  new account at all. A support case is open.
+  new account at all: every model `ListFoundationModels` listed, from every provider, answered
+  `Converse` with `ValidationException: Operation not allowed`, which doesn't say what is missing.
+  A support case is open.
 - **Got past it:**
   - every picture is still asked for as one request body; a small adapter (`server/gemini.mjs`)
     reads that body and asks Google's Gemini image models for the same picture, so the TV didn't
@@ -228,9 +262,7 @@ against the real services, it says so.
 - **Since verified:** Claude through Anthropic's API and Gemini's pictures ran live from the
   deployed story server on 22 and 23 October; Bedrock still hasn't.
 
-## In the Vega Virtual Device (added after the run, 23 October)
-
-Severity: **High** blocks the task, **Medium** costs hours, **Low** costs minutes.
+## In the Vega Virtual Device, on a rented Mac (22 and 23 October)
 
 ### 16. Remote-desktop keys never reach the app; the device's own input tool does
 
@@ -281,6 +313,46 @@ Severity: **High** blocks the task, **Medium** costs hours, **Low** costs minute
 - **Suggestion:** a note on which WebGL2 features the simulator's WebView supports, and how it
   differs from a Fire TV stick, so a web developer knows which to trust.
 
+## Getting it running on AWS and Google, late
+
+### 20. An EC2 Mac needs a quota approval first, and ours never came
+
+- **Doing:** getting an Apple Silicon Mac to run the simulator (entry 1a), on AWS, five days before
+  the deadline.
+- **Expected:** allocate a `mac2` (M1) or `mac2-m2` (M2) Dedicated Host and launch macOS on it.
+- **What happened:** a new account's quota for Mac Dedicated Hosts is zero. We asked for both
+  families; both requests were still under review two days before the deadline, so nothing could
+  be allocated. A Mac host is also billed for at least 24 hours once allocated.
+- **Got past it:** rented a Mac mini M4 for a day from a Mac hosting company and installed the
+  Vega SDK there.
+- **Severity:** High.
+- **Suggestion:** for the Fire TV track, a way to get an Apple Silicon Mac for the simulator
+  (a hackathon quota, or an EC2 Mac image with the Vega SDK and simulator installed), since the
+  simulator runs WebView apps nowhere else.
+
+### 21. A SAM deploy kept an earlier parameter value without saying so
+
+- **Doing:** redeploying the story server with new keys, via `sam deploy --parameter-overrides`.
+- **What happened:** an earlier deploy had set `RealPictures=off` while the image model was being
+  replaced. A later deploy didn't name `RealPictures`, and pictures stayed off. Nothing in the
+  deploy's output lists the parameter values in effect, so we found it only when no picture came.
+- **Got past it:** every deploy now names every parameter it relies on.
+- **Severity:** Medium.
+- **Suggestion:** print the stack's parameter values (secrets masked) at the end of `sam deploy`.
+
+### 22. Gemini's image models: a quota of zero without billing, and credits that ran out mid-take
+
+- **Doing:** making pictures with Google's Gemini image models (not AWS; in place of Nova Canvas,
+  entry 15).
+- **What happened:** on a project without billing, every image model answered 429 with
+  `limit: 0`, a quota error rather than "this needs billing". Later, with prepaid credits, they ran
+  out in the middle of recording the demo: every picture failed with 402, with no warning before.
+- **Got past it:** turned billing on; topped the credits up; the server now tries the next image
+  model when one has no quota, and the story is told without its picture when none can be made.
+- **Severity:** Medium.
+- **Suggestion (to Google):** say "needs billing" for a zero quota, and warn before prepaid credits
+  run out.
+
 ## What we would ask for first
 
 1. A key-event table for the Vega WebView (entries 3, 4 and 5).
@@ -290,3 +362,4 @@ Severity: **High** blocks the task, **Medium** costs hours, **Low** costs minute
 5. A successor named for each retired Bedrock model, shown where it is called, and a reason when a
    new account can't reach Bedrock's models (entry 15).
 6. `inputd-cli` documented as the way to script the simulator's remote (entry 16).
+7. A way to get an Apple Silicon Mac for the simulator, on AWS, in time for a hackathon (entry 20).
