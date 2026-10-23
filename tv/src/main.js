@@ -2078,6 +2078,8 @@ function placeAsTold(session, told) {
     skyPlace();
     const A = state.atlas;
     if (A && A.p && A.p.id === p.id && !A.look && redrawPlace(A)) placeOf(A, world.scene);
+    // the map, open before the place had a name, drawn again with it
+    if (A && A.p && A.p.id === p.id && A.mapView && !A.mapView.zooming) openMap(A);
     return { scene: world.scene, backdrop: null };
   })();
 }
