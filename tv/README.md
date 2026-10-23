@@ -112,24 +112,25 @@ drawing wakes into that place, Step inside opens in it, and the TV at rest shows
     the sky, ▶‖ its night as it was told, read aloud, and Back walks home; and left on the seals, the TV rests, showing the family's paintings, each in its own world's place. Last, the TV is filled almost to its limit, and the
     seals say so; then to the brim, so Moon's world no longer fits: it is kept in IndexedDB
     instead, read from there after the TV is turned off and on, and moved back once there is room.
-- **Not yet tried from the story server.** The real storyteller and Worldbuilder have told 24 worlds, three of
-  them for 22 nights, through Claude Code on a Claude subscription (`npm run cli`), but never
-  from the story server (through Anthropic's API or Amazon Bedrock), and Dream it real has never made a real picture: the tests use a
-  stand-in picture. Pictures were built on Amazon Nova Canvas, and clips on Nova Reel; AWS retired
-  both on 30 September 2026, so pictures now come from Google's Gemini image models
-  (`server/gemini.mjs`, which reads each request in the shape the server already builds for Nova
-  Canvas), tested only against a stand-in of Gemini's API so far; and *Watch it come alive* is off,
-  so the TV never offers it (FRICTION_LOG entry 15). Walk inside has been run only with a stand-in world: no real World
-  Labs world has been built from the TV, nor walked on a Fire TV Stick, whose GPU may find it too
-  much (the TV draws it at the screen's full size, dropping to two thirds if it can't keep up, and takes a world of at most 150,000
-  points). That costs money, and waits for your go-ahead. Without it, each told painting
-  wakes up in its world's place (drawn by the TV), or at night, made on the TV, for free.
+- **Run live from the story server** (22 and 23 October): the storyteller (Claude, through
+  Anthropic's API), the Worldbuilder and the Set Designer, Polly's voice, and Google Gemini's
+  pictures: a drawing made real, each thing on its own, a world painted as one, a panorama and a
+  story's picture from words alone. It has never run on Amazon Bedrock: its models weren't open to
+  our new account. Pictures were built on Amazon Nova Canvas, and clips on Nova Reel; AWS retired
+  both on 30 September 2026, so pictures come from Gemini (`server/gemini.mjs`, which reads each
+  request in the shape the server already builds for Nova Canvas), and *Watch it come alive* is
+  off, so the TV never offers it (FRICTION_LOG entry 15). Walk inside built a real World Labs world
+  from the TV's picture, but in the Vega Virtual Device it drew black (WebGL2 was there and the
+  file loaded; the cause isn't found), and it hasn't been walked on a Fire TV Stick, whose GPU may
+  find it too much (the TV draws it at the screen's full size, dropping to two thirds if it can't
+  keep up, and takes a world of at most 150,000 points).
 - **Packaged as a Vega app** (`vega/`): it builds for the Vega Virtual Device and for Fire TV
-  sticks. **It has not yet run on either.** The simulator needs hardware acceleration (KVM) to
-  boot, and the cloud machine this was built on has none; and it runs a WebView app only on an
-  Apple Silicon Mac (not on Ubuntu, an Intel Mac or Windows), so that is where to try it.
-- **The story server** (`server/`) is written and tested against stand-ins. **It has been deployed
-  once, in part**: its voice (Polly) and its privacy page answer. Bedrock's models aren't open to
+  sticks. **It has run in the Vega Virtual Device** on an Apple Silicon Mac (the demo video was
+  recorded there), installed and launched with the Vega CLI and driven with the remote's buttons
+  through the device's own input tool. The simulator runs a WebView app only on an Apple Silicon
+  Mac (not on Ubuntu, an Intel Mac or Windows). **It has not run on a physical Fire TV stick.**
+- **The story server** (`server/`) is tested against stand-ins, and **deployed and live**: every
+  call above went through it. Bedrock's models aren't open to
   our new AWS account, so the storyteller calls Claude through Anthropic's own API instead (an
   `AnthropicKey`; the same models, and Bedrock still works for an account that has it), and
   pictures come from Gemini (a `GeminiKey`). Why there is a server at all: calling Claude takes a

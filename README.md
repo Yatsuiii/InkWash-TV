@@ -1,7 +1,7 @@
 # Inkwash
 
-**Draw the world in your head with the Fire TV remote.** A storyteller tells each drawing back as a
-story, it wakes up in a place made from that story, and your world grows a piece at a time.
+**Kids watch other people's worlds all day. Inkwash lets them make their own:** draw it with the
+Fire TV remote, hear it told back as a story, and keep a world that grows a piece at a time.
 
 Our entry to the Amazon Developer Hackathon 2026, Fire TV track: a Vega OS app, with a story server
 on AWS (AWS Lambda, Amazon Polly, DynamoDB), Claude as its storyteller and pictures from Google's
@@ -22,7 +22,7 @@ Gemini.
   Fire TV.
 - **See how it's built:** the diagram under *How it's built*, then [`tv/README.md`](tv/README.md).
 
-![Star's world on the TV: everything drawn in it standing where it first came](tv/docs/gallery/02-their-world.jpg)
+![Star's rocket, moon and dragon, drawn with the remote and painted for real, in the Vega Virtual Device](tv/docs/gallery/simulator/01-drawn-then-painted.jpg)
 
 ## What it does
 
@@ -46,6 +46,9 @@ Gemini.
   child's, and a thing from one world can visit another's.
 - **It forgets exactly what you ask.** *Forget* a thing and it goes, with everything that grew from
   it, and nothing else does.
+- **Or write it instead.** No time to draw with a remote? *Write a story instead*: say it on your
+  phone or pick an idea, and it's told back and painted from your words.
+- **Each world opens on its map**, a hand-inked atlas of everything drawn in it; OK flies in.
 
 ## A prompt can ask; code can promise
 
@@ -76,13 +79,13 @@ at a daily spending limit. Their worlds stay on their TV.
 | [`tv/vega/`](tv/vega) | The Vega OS app: a React Native WebView around the packaged page, with the remote's keys passed through |
 | [`engine/`](engine) | The memory under it: a world-state engine (who is who, what is true when, what each line relied on) and each person's dream world. The TV and the server carry copies of it, kept in step by a test |
 | [`tv/FRICTION_LOG.md`](tv/FRICTION_LOG.md) | What got in our way building on Vega OS and AWS, and what we would ask for |
-| [`tv/docs/gallery/`](tv/docs/gallery) | The TV's own screens, taken with the real storyteller |
+| [`tv/docs/gallery/simulator/`](tv/docs/gallery/simulator) | Recorded in the Vega Virtual Device with the deployed story server; [`tv/docs/gallery/`](tv/docs/gallery), the TV page in Chromium |
 
 ## Tests
 
 ```sh
-cd tv && npm install && npm test && npm run e2e   # 89 unit tests; 33 browser steps at 1920 x 1080
-cd server && npm install && npm test              # 94 tests of the story server
+cd tv && npm install && npm test && npm run e2e   # 99 unit tests; 34 browser steps at 1920 x 1080
+cd server && npm install && npm test              # 103 tests of the story server
 cd ../../engine && node --test test.mjs personal/test.mjs dreams/test.mjs   # 93 tests of the engine
 ```
 
@@ -92,18 +95,19 @@ single file, opened from `file://` as the Vega app loads it. Among the server's 
 path runs end to end: the real Lambda handler, Anthropic SDK and Gemini client, with only the two
 APIs faked at the network, each turning away what the real one would.
 
-## What hasn't been tried yet
+## What has run, and what hasn't
 
-- **No paid call has been made from the story server yet.** The real storyteller and Worldbuilder
-  have told 24 worlds through Claude Code on a Claude subscription, but not through the deployed
-  server. That server calls Anthropic's API, because Amazon Bedrock's models aren't open to our new
-  AWS account. No real picture, panorama or World Labs world has been made: the tests use
-  stand-ins for Gemini and World Labs. *Watch it come alive* (six seconds of Amazon Nova Reel) is
-  off, because AWS retired Nova Reel too.
-- **The Vega app has not run on a device.** It builds for the Vega Virtual Device and for Fire TV
-  sticks, but our build machine had no hardware acceleration (KVM), and the simulator runs a
-  WebView app only on an Apple Silicon Mac, so everything was tested in Chromium at 1920 × 1080
-  with the remote's keys.
+- **Run in the Vega Virtual Device** (on an Apple Silicon Mac, 22 and 23 October): the release
+  package installed and launched with the Vega CLI, driven with the remote's buttons through the
+  device's own input tool, and recorded for the demo video.
+- **Live from the deployed story server:** Claude's tellings, questions and places, through
+  Anthropic's API; Google Gemini's pictures (a drawing made real, each thing, a world painted as one,
+  a panorama, a story's picture from words alone); and Amazon Polly's voice.
+- **Not run yet:** Amazon Bedrock. The storyteller is written for it, but Bedrock's models weren't
+  open to our new AWS account, so it calls Anthropic's API instead; moving fully onto Bedrock is
+  next. *Walk inside* (a World Labs world) built from the TV's picture but drew black in the
+  simulator, and hasn't been tried on a Fire TV stick. *Watch it come alive* is off: AWS retired
+  Amazon Nova Reel. Nothing has run on a physical Fire TV stick yet.
 
 ## Licence
 
