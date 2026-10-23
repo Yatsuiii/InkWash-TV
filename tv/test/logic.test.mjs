@@ -2228,6 +2228,11 @@ test('their world’s map: one land, their world’s own place, named for it; ea
   assert.equal(placeNameOf({ place: 'The grey surface of the moon under a black sky' }), 'The Grey Surface of the Moon');
   assert.equal(placeNameOf({ place: 'A vast library that goes on for ever' }), 'The Vast Library');
   assert.equal(placeNameOf(null), 'The Lake at Night');
+  // a scene without a place named: a place of theirs that is a land, else its ground
+  assert.equal(placeNameOf({ place: '', ground: { kind: 'sand' } }, [{ id: 'e1', name: 'the rocket', kind: 'thing' }, { id: 'e2', name: 'the moon', kind: 'place' }, { id: 'e3', name: 'the moon castle', kind: 'place' }]), 'The Moon');
+  assert.equal(placeNameOf({ place: '', ground: { kind: 'snow' } }, [{ id: 'e1', name: 'the pier', kind: 'place' }]), 'The Snowfields');
+  const moon = atlasSpec({ title: 'Star’s world', things: [{ id: 'e2', name: 'the moon', kind: 'place', xy: [800, 200] }, { id: 'e3', name: 'the moon castle', kind: 'place', xy: [800, 500] }], scene: { place: '', ground: { kind: 'sand' } } });
+  assert.deepEqual([moon.regions[0].name, moon.regions[0].entity, moon.places.map((p) => p.name)], ['The Moon', 'e2', ['The Moon Castle']]);
   const scene = { place: 'The grey surface of the moon under a black sky', ground: { kind: 'sand', far: '#888888', near: '#999999' }, sky: { top: '#000000', bottom: '#111111' } };
   const things = [
     { id: 'e1', name: 'the rocket', kind: 'thing', xy: [200, 600] },

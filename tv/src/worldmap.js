@@ -26,12 +26,21 @@ const SMALL = new Set(['a', 'an', 'the', 'of', 'on', 'in', 'at', 'to', 'and', 'b
 export const titleOf = (s) => String(s || '').split(/\s+/).filter(Boolean).map((w, i) => (i && SMALL.has(w.toLowerCase()) ? w.toLowerCase() : w.charAt(0).toUpperCase() + w.slice(1))).join(' ');
 const bare = (s) => String(s || '').toLowerCase().replace(/^(the|a|an|my|our) /, '').trim();
 
-// Their world's place, named as a map would name it, from the words its scene was written with
-// ("A moonlit lake ringed by low hills" is The Moonlit Lake); without a scene, the TV's night on the lake
+// Their world's place, named as a map would name it: from the words its scene was written with
+// ("A moonlit lake ringed by low hills" is The Moonlit Lake); else from a place of theirs that is a
+// land (the moon, an island); else from its ground (water is The Lake); and with no scene at all,
+// the TV's own night on the lake
+const LANDISH = /\b(moon|planet|star|island|isle|kingdom|land|world|forest|wood|woods|lake|sea|ocean|sky|clouds?|city|town|village|valley|mountains?|desert|garden|meadow|jungle|cave|shore|beach|river)\b/;
+const GROUND_NAMES = { water: 'The Lake', snow: 'The Snowfields', sand: 'The Sands', grass: 'The Meadows', stone: 'The Stone Hills', clouds: 'The Cloudlands', boards: 'The Boardwalk', tiles: 'The Town' };
 const STOP = /^(with|by|under|where|in|on|at|ringed|lit|beneath|below|above|full|that|which|and|from|across|surrounded|filled|covered|over|near|beside|between|among|whose|as|while|glowing|lined|dotted|scattered)$/i;
-export function placeNameOf(scene) {
+export function placeNameOf(scene, things = []) {
   const text = String((scene && scene.place) || '').trim();
-  if (!text) return 'The Lake at Night';
+  if (!text) {
+    const land = things.find((t) => t.kind === 'place' && LANDISH.test(bare(t.name)) && bare(t.name).split(' ').length <= 3);
+    if (land) return titleOf(`the ${bare(land.name)}`);
+    const ground = scene && scene.ground && GROUND_NAMES[scene.ground.kind];
+    return ground || 'The Lake at Night';
+  }
   const words = text.replace(/[.;:,!?—–-].*$/, '').split(/\s+/).filter(Boolean), cut = [];
   for (const w of words) { if (cut.length && STOP.test(w)) break; cut.push(w); }
   const name = cut.join(' ').replace(/^(a|an|the)\s+/i, '');
@@ -41,7 +50,7 @@ export function placeNameOf(scene) {
 // The atlas's spec for their world: `things` ({ id, name, kind, xy }: theirs, not visitors, where
 // each first came on their 1600 x 1000 sheet), `scene` (their world's place), `seed`
 export function atlasSpec({ title, chapters = 1, things = [], scene = null, seed = 1 } = {}) {
-  const place = placeNameOf(scene), core = bare(place);
+  const place = placeNameOf(scene, things), core = bare(place);
   const ground = scene && scene.ground ? scene.ground.kind : null;
   // a place of theirs that is the world's own place is the land itself, not a mark on it
   const isLand = (t) => t.kind === 'place' && bare(t.name).length > 2 && core.includes(bare(t.name));
